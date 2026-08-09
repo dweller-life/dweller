@@ -1,0 +1,90 @@
+# Dweller — Project Brief
+
+## What this is
+
+A home health report app. Someone enters a UK postcode and gets back a report scoring their home on water quality, air quality, structural health, noise, and local environmental risk, each rated green/orange/red.
+
+## Repo structure
+
+- `/frontend` — James's app, built in Claude Design, handed off into this folder.
+- `/backend` — the database and API logic, described below.
+
+## Data tables
+
+| Table name | What it holds |
+|---|---|
+| `postcode_spine` | Every UK postcode with its map location, everything else references this. |
+| `water_companies` | ~20 rows of manually researched water company data: hardness, nitrate, lead, THMs, chlorine, pH, compliance %, PFAS notice. |
+| `postcode_to_water_company` | Lookup: postcode prefix -> which water company. |
+| `hardness_geology_estimate` | Our own more granular hardness model, built from geology data, cross-checked against `water_companies`. |
+| `air_quality_grid` | PM2.5 and NO2 by area, from the government's national grid file. |
+| `radon_grid` | Radon risk class (1-6) by area. |
+| `noise_grid` | Night-time road and rail noise by area. |
+| `light_pollution_grid` | Light pollution estimate from satellite data. |
+| `green_space` | Distance to nearest park/green space. |
+| `historic_landfill` | Whether a postcode is near a former landfill. Personal details from the source data stripped out entirely. |
+| `epc_cache` | Wall type, insulation, glazing, heating, build year, SAP score, per property, from the EPC register. |
+| `postcode_cache` | Saved copy of a finished report, so repeat lookups don't redo the work. |
+| `leads` | Email, postcode, saved report, consent flags. |
+
+Flood risk and live flood warnings are checked live against the government's own system, not stored in our own table.
+
+## Thresholds: green / orange / red
+
+| Metric | Green | Orange | Red |
+|---|---|---|---|
+| Water hardness (mg/L) | Under 120 | 120-250 | Over 250 |
+| Nitrate (mg/L) | Under 25 | 25-50 | Over 50 (legal limit) |
+| Lead (µg/L) | Under 5 | 5-10 | Over 10 (legal limit) |
+| THMs (µg/L) | Under 50 | 50-100 | Over 100 |
+| Chlorine (mg/L) | Under 0.5 | 0.5-1.0 | Over 1.0 |
+| pH | 7.0-8.5 | Just outside that | Below 6.5 or above 9.5 |
+| Lead pipe risk (build year) | 1970 or later | 1940-1970 | Before 1940 |
+| PM2.5 (µg/m3) | 5 or under | 5-10 | Over 10 |
+| NO2 (µg/m3) | 10 or under | 10-40 | Over 40 (legal limit) |
+| Radon class | 1-2 | 3-4 | 5-6 |
+| Distance to major road | Over 200m | 50-200m | Under 50m |
+| EPC/SAP band | C or above | D-E | F-G |
+| Road noise at night | 40dB or under | 40-45dB | Over 45dB |
+| Rail noise at night | 40dB or under | 40-44dB | Over 44dB |
+| Flood risk | Very Low/Low | Medium | High |
+| Historic landfill | Not within 250m | -- | Within 250m |
+| Green space nearby | Within 300m | 300-800m | None within 800m |
+
+## Our own composite scores (not official measurements)
+
+**Damp & Mould risk** -- sum points from these five checks:
+
+| Check | 0 pts | 1 pt | 2 pts |
+|---|---|---|---|
+| Wall type | Cavity, insulated | Cavity uninsulated / solid insulated | Solid, uninsulated |
+| Windows | Double/triple glazed | -- | Single glazed |
+| Ventilation | Mechanical system | Extractor fans | None/natural only |
+| Heating fuel | Electric | Gas | -- |
+| Built | 1919 or later | Before 1919 | -- |
+
+Total 0-8. Green 0-2, Orange 3-5, Red 6-8.
+
+**Overheating risk** -- sum points from these three checks:
+
+| Check | 0 pts | 1 pt | 2 pts |
+|---|---|---|---|
+| Local density (tercile) | Bottom third nationally | Middle third | Top third |
+| Ventilation (same field as above) | Mechanical | Extractor fans | None |
+| Top floor flat | No | Yes | -- |
+
+Total 0-5. Green 0-1, Orange 2-3, Red 4-5.
+
+## Live vs. batch-built data
+
+**Checked live, every request:** exact location, EPC (fallback), flood risk, current flood warnings, air quality problem area status.
+
+**Built once, then looked up:** water company data, geology hardness model, air pollution, radon, noise, light pollution, green space, historic landfill.
+
+**Cut, not included:** industrial pollution sources, aircraft noise, ground stability/subsidence data.
+
+## Still open, not blockers, but unresolved
+
+1. Which BGS hydrogeology licence tier we're allowed to use for the hardness model.
+2. Consent screen wording for pregnancy/health condition fields, needs its own separate opt-in, not bundled with general marketing consent.
+3. The water company research itself, ~20 companies, still to be done.

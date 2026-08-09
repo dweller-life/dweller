@@ -39,7 +39,7 @@ postcodes once deployed, with particular scrutiny on flood risk and AQMA.
 ```
 npm install
 npm run typecheck   # src/ + api/
-npm run build        # compiles src/ to dist/, for the CLI below
+npm run build:cli    # compiles src/ to dist/, for the CLI below
 npm run report -- "SW1A 1AA"   # runs getHomeReport() locally, prints JSON
 ```
 

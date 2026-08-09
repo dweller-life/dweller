@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Health Score — 32-Point Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07091a; --surface: rgba(255,255,255,0.04); --surface2: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08); --text: #e2e8f0; --muted: #94a3b8;
+      --grad: linear-gradient(135deg,#3b82f6,#a855f7);
+      --c-critical:#ef4444; --c-high:#f97316; --c-medium:#3b82f6; --c-low:#64748b;
+      --c-air:#60a5fa; --c-property:#c084fc; --c-risk:#f87171;
+      --c-environment:#4ade80; --c-water:#22d3ee; --c-geology:#fbbf24; --c-community:#fb923c;
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+    .view { display:none; }
+    .view.active { display:block; }
+
+    /* ── FORM ─────────────────────────────── */
+    #view-form {
+      min-height:100vh; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:2rem;
+      background: radial-gradient(ellipse at 20% 50%,rgba(59,130,246,.15) 0%,transparent 60%),
+                  radial-gradient(ellipse at 80% 20%,rgba(168,85,247,.15) 0%,transparent 60%),var(--bg);
+    }
+    .hero-label { font-size:.75rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+      background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:1.25rem; }
+    .hero-title { font-size:clamp(2.2rem,5vw,3.5rem); font-weight:800; line-height:1.1; text-align:center; max-width:640px; margin-bottom:1rem; }
+    .hero-title span { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .hero-sub { color:var(--muted); font-size:1rem; text-align:center; max-width:500px; line-height:1.7; margin-bottom:.75rem; }
+    .hero-pills { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-bottom:2.5rem; }
+    .hero-pill { font-size:.72rem; font-weight:600; padding:.3rem .75rem; border-radius:2rem;
+      background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--muted); }
+    .form-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:1.5rem;
+      padding:2.5rem; width:100%; max-width:440px; backdrop-filter:blur(20px); }
+    .form-group { margin-bottom:1.25rem; }
+    .form-group label { display:block; font-size:.8rem; font-weight:600; letter-spacing:.05em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
+    .form-group input { width:100%; background:rgba(255,255,255,.06); border:1px solid var(--border);
+      border-radius:.75rem; padding:.875rem 1rem; font-size:1rem; font-family:inherit;
+      color:var(--text); transition:border-color .2s,background .2s; outline:none; }
+    .form-group input::placeholder { color:rgba(148,163,184,.5); }
+    .form-group input:focus { border-color:rgba(59,130,246,.6); background:rgba(59,130,246,.06); }
+    .form-group input.error { border-color:var(--c-critical); }
+    .field-error { font-size:.78rem; color:var(--c-critical); margin-top:.35rem; display:none; }
+    .field-error.visible { display:block; }
+    .btn-primary { width:100%; padding:1rem; background:var(--grad); border:none; border-radius:.75rem;
+      font-size:1rem; font-weight:700; font-family:inherit; color:#fff; cursor:pointer;
+      transition:opacity .2s,transform .1s; margin-top:.5rem; }
+    .btn-primary:hover { opacity:.9; }
+    .btn-primary:active { transform:scale(.98); }
+    .trust-badges { display:flex; gap:1.5rem; justify-content:center; margin-top:2rem; flex-wrap:wrap; }
+    .trust-badge { display:flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--muted); }
+
+    /* ── LOADING ──────────────────────────── */
+    #view-loading { min-height:100vh; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:2rem; gap:1.5rem; }
+    .loading-title { font-size:1.4rem; font-weight:700; text-align:center; }
+    .loading-sub { font-size:.85rem; color:var(--muted); text-align:center; }
+    .loading-steps { display:flex; flex-direction:column; gap:.6rem; width:100%; max-width:420px; }
+    .loading-step { display:flex; align-items:center; gap:.875rem; padding:.8rem 1rem;
+      background:var(--surface); border:1px solid var(--border); border-radius:.875rem;
+      font-size:.88rem; color:var(--muted); transition:all .3s; }
+    .loading-step.done { border-color:rgba(34,197,94,.3); color:var(--text); }
+    .loading-step.active { border-color:rgba(59,130,246,.4); color:#60a5fa; }
+    .step-icon { width:26px; height:26px; border-radius:50%; display:flex; align-items:center;
+      justify-content:center; font-size:.75rem; flex-shrink:0; background:rgba(255,255,255,.06); }
+    .loading-step.done .step-icon { background:rgba(34,197,94,.15); color:#4ade80; }
+    .loading-step.active .step-icon { background:rgba(59,130,246,.15); animation:pulse-ring 1.5s ease-in-out infinite; }
+    @keyframes pulse-ring { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)} 50%{box-shadow:0 0 0 8px rgba(59,130,246,0)} }
+    .spinner { width:14px; height:14px; border:2px solid rgba(59,130,246,.3); border-top-color:#3b82f6;
+      border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── DASHBOARD ────────────────────────── */
+    #view-dashboard { min-height:100vh; padding:2rem; max-width:1200px; margin:0 auto; }
+    .dash-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .dash-greeting { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.2rem; }
+    .dash-title { font-size:1.6rem; font-weight:800; }
+    .dash-location { display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--muted); margin-top:.25rem; }
+    .btn-restart { padding:.6rem 1.2rem; background:var(--surface); border:1px solid var(--border);
+      border-radius:.6rem; font-family:inherit; font-size:.83rem; color:var(--muted); cursor:pointer; transition:all .2s; }
+    .btn-restart:hover { color:var(--text); border-color:rgba(255,255,255,.2); }
+
+    /* Overall score strip */
+    .score-strip { display:grid; grid-template-columns:auto 1fr; gap:2rem; align-items:center;
+      background:var(--surface); border:1px solid var(--border); border-radius:1.5rem; padding:2rem;
+      margin-bottom:1.5rem; position:relative; overflow:hidden; }
+    .score-strip::before { content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 0% 50%,rgba(59,130,246,.07),transparent 60%); pointer-events:none; }
+    .gauge-wrap { position:relative; width:140px; height:140px; flex-shrink:0; }
+    .gauge-svg { width:140px; height:140px; transform:rotate(-90deg); }
+    .gauge-bg { fill:none; stroke:rgba(255,255,255,.06); stroke-width:11; }
+    .gauge-fill { fill:none; stroke-width:11; stroke-linecap:round;
+      transition:stroke-dashoffset 1.6s cubic-bezier(.34,1.56,.64,1); }
+    .gauge-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .gauge-number { font-size:2.25rem; font-weight:800; line-height:1; }
+    .gauge-label { font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:.2rem; }
+    .score-details h2 { font-size:1.35rem; font-weight:700; margin-bottom:.4rem; }
+    .score-verdict { font-size:.9rem; color:var(--muted); line-height:1.7; max-width:600px; }
+    .score-meta { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem; }
+    .smeta-item { display:flex; align-items:center; gap:.4rem; font-size:.78rem; padding:.28rem .75rem;
+      border-radius:2rem; font-weight:600; }
+
+    /* Category score cards */
+    .cat-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:.75rem; margin-bottom:1.5rem; }
+    .cat-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:1rem;
+      text-align:center; opacity:0; transform:translateY(12px); animation:fadeUp .4s forwards; }
+    @keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
+    .cat-card-icon { font-size:1.4rem; margin-bottom:.35rem; }
+    .cat-card-score { font-size:1.8rem; font-weight:800; margin-bottom:.15rem; }
+    .cat-card-name { font-size:.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+    .cat-card-bar { height:4px; background:rgba(255,255,255,.06); border-radius:2px; margin-top:.5rem; overflow:hidden; }
+    .cat-card-bar-fill { height:100%; border-radius:2px; transition:width 1s ease; width:0%; }
+
+    /* Filter tabs */
+    .filter-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; align-items:center; }
+    .filter-tab { padding:.4rem 1rem; border-radius:2rem; font-size:.8rem; font-weight:600;
+      background:var(--surface); border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all .2s; }
+    .filter-tab.active { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.2); color:var(--text); }
+    .filter-tab.critical.active { background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.4); color:#fca5a5; }
+    .filter-tab.high.active { background:rgba(249,115,22,.15); border-color:rgba(249,115,22,.4); color:#fdba74; }
+    .filter-tab.medium.active { background:rgba(59,130,246,.15); border-color:rgba(59,130,246,.4); color:#93c5fd; }
+    .filter-tab.low.active { background:rgba(100,116,139,.15); border-color:rgba(100,116,139,.4); color:#cbd5e1; }
+
+    /* Data point table */
+    .dp-table { display:flex; flex-direction:column; gap:.35rem; margin-bottom:1.5rem; }
+    .dp-row { background:var(--surface); border:1px solid var(--border); border-radius:.875rem;
+      cursor:pointer; transition:border-color .2s,background .2s; overflow:hidden; }
+    .dp-row:hover { background:var(--surface2); border-color:rgba(255,255,255,.14); }
+    .dp-row-head { display:grid; grid-template-columns:6px 28px 1fr 130px 52px 90px 22px;
+      gap:.75rem; align-items:center; padding:.75rem 1rem; }
+    .dp-pri-bar { width:4px; height:36px; border-radius:2px; flex-shrink:0; }
+    .dp-pri-bar.critical { background:var(--c-critical); }
+    .dp-pri-bar.high { background:var(--c-high); }
+    .dp-pri-bar.medium { background:var(--c-medium); }
+    .dp-pri-bar.low { background:var(--c-low); }
+    .dp-num { font-size:.75rem; font-weight:700; color:var(--muted); text-align:right; }
+    .dp-info .dp-name { font-size:.88rem; font-weight:600; }
+    .dp-info .dp-sub { font-size:.72rem; color:var(--muted); margin-top:.1rem; }
+    .dp-source-tag { font-size:.68rem; color:var(--muted); background:rgba(255,255,255,.05);
+      border:1px solid var(--border); border-radius:.35rem; padding:.2rem .5rem; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; }
+    .dp-score-val { font-size:1.1rem; font-weight:800; text-align:center; }
+    .dp-cat-tag { font-size:.68rem; font-weight:700; padding:.25rem .6rem; border-radius:2rem; text-align:center; white-space:nowrap; }
+    .dp-arrow { color:var(--muted); font-size:.8rem; transition:transform .2s; text-align:center; }
+    .dp-row.open .dp-arrow { transform:rotate(180deg); }
+    .dp-expand { display:none; padding:.75rem 1rem 1rem 2.5rem; border-top:1px solid var(--border);
+      background:rgba(0,0,0,.2); }
+    .dp-row.open .dp-expand { display:block; }
+    .dp-impact { font-size:.82rem; color:var(--muted); line-height:1.6; margin-bottom:.6rem; }
+    .dp-value-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+    .dp-value { font-size:.82rem; font-weight:600; }
+    .dp-live-badge { font-size:.65rem; font-weight:700; padding:.18rem .5rem; border-radius:2rem;
+      background:rgba(34,197,94,.12); color:#4ade80; border:1px solid rgba(34,197,94,.2); }
+    .dp-est-badge { font-size:.65rem; font-weight:700; padding:.18rem .5rem; border-radius:2rem;
+      background:rgba(148,163,184,.1); color:var(--muted); border:1px solid var(--border); }
+
+    /* Charts */
+    .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+    @media(max-width:700px) {
+      .charts-grid { grid-template-columns:1fr; }
+      .score-strip { grid-template-columns:1fr; text-align:center; }
+      .gauge-wrap { margin:0 auto; }
+      .dp-row-head { grid-template-columns:6px 24px 1fr 46px 80px 18px; }
+      .dp-source-tag { display:none; }
+    }
+    .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:1.25rem; padding:1.25rem; }
+    .chart-card-title { font-size:.85rem; font-weight:600; margin-bottom:1rem; }
+
+    /* Interpretation */
+    .interp-card { background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(168,85,247,.07));
+      border:1px solid rgba(59,130,246,.18); border-radius:1.5rem; padding:1.75rem; margin-bottom:1.5rem; }
+    .interp-card h3 { font-size:1rem; font-weight:700; margin-bottom:.85rem; }
+    .interp-body { font-size:.88rem; line-height:1.8; color:var(--muted); }
+    .interp-body strong { color:var(--text); }
+    .recs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:.65rem; margin-top:1.1rem; }
+    .rec-item { display:flex; gap:.65rem; align-items:flex-start; padding:.8rem .9rem;
+      background:rgba(255,255,255,.03); border-radius:.75rem; border:1px solid var(--border); font-size:.81rem; line-height:1.5; }
+    .footer-note { text-align:center; font-size:.72rem; color:rgba(148,163,184,.45);
+      padding:1.5rem 0; border-top:1px solid var(--border); margin-top:1.5rem; }
+
+    /* Section label */
+    .section-label { font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:.75rem; margin-top:1.5rem; }
+    .section-label:first-child { margin-top:0; }
+  </style>
+</head>
+<body>
+
+<!-- ══ FORM ══════════════════════════════════════════════════ -->
+<section id="view-form" class="view active">
+  <div class="hero-label">32-Point Environmental Health Analysis</div>
+  <h1 class="hero-title">Discover your <span>Home Health Score</span></h1>
+  <p class="hero-sub">We cross-reference your address against 32 public datasets — air quality, radon, flood risk, water, geology, community health and more.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🌬️ Air Quality</span><span class="hero-pill">☢️ Radon</span>
+    <span class="hero-pill">🌊 Flood Risk</span><span class="hero-pill">💧 Water</span>
+    <span class="hero-pill">🪨 Geology</span><span class="hero-pill">👥 Community Health</span>
+    <span class="hero-pill">🏘️ Property</span><span class="hero-pill">🌿 Environment</span>
+  </div>
+  <div class="form-card">
+    <div class="form-group">
+      <label for="inp-name">Your name</label>
+      <input type="text" id="inp-name" placeholder="Jane Smith" autocomplete="name">
+      <div class="field-error" id="err-name">Please enter your name</div>
+    </div>
+    <div class="form-group">
+      <label for="inp-email">Email address</label>
+      <input type="email" id="inp-email" placeholder="jane@example.com" autocomplete="email">
+      <div class="field-error" id="err-email">Please enter a valid email</div>
+    </div>
+    <div class="form-group">
+      <label for="inp-postcode">UK Postcode</label>
+      <input type="text" id="inp-postcode" placeholder="SW1A 1AA" autocomplete="postal-code" style="text-transform:uppercase">
+      <div class="field-error" id="err-postcode">Please enter a valid UK postcode</div>
+    </div>
+    <button class="btn-primary" id="btn-analyse">Generate My Report →</button>
+  </div>
+  <div class="trust-badges">
+    <div class="trust-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Data never sold
+    </div>
+    <div class="trust-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+      Public data sources only
+    </div>
+    <div class="trust-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Instant results
+    </div>
+  </div>
+</section>
+
+<!-- ══ LOADING ════════════════════════════════════════════════ -->
+<section id="view-loading" class="view">
+  <div class="loading-title">Analysing your home environment</div>
+  <div class="loading-sub">Querying 32 data points across 8 public databases</div>
+  <div class="loading-steps" id="loading-steps">
+    <div class="loading-step" id="ls-location"><div class="step-icon">📍</div><span>Validating postcode &amp; location data</span></div>
+    <div class="loading-step" id="ls-air"><div class="step-icon">🌬️</div><span>Fetching air quality &amp; climate data</span></div>
+    <div class="loading-step" id="ls-flood"><div class="step-icon">🌊</div><span>Checking flood &amp; environmental risk registers</span></div>
+    <div class="loading-step" id="ls-water"><div class="step-icon">💧</div><span>Downloading water quality reports</span></div>
+    <div class="loading-step" id="ls-community"><div class="step-icon">👥</div><span>Fetching community health indicators</span></div>
+    <div class="loading-step" id="ls-industrial"><div class="step-icon">🏭</div><span>Scanning industrial emissions register</span></div>
+    <div class="loading-step" id="ls-geo"><div class="step-icon">🪨</div><span>Computing geology &amp; ground risk</span></div>
+    <div class="loading-step" id="ls-report"><div class="step-icon">🧠</div><span>Generating 32-point health report</span></div>
+  </div>
+</section>
+
+<!-- ══ DASHBOARD ══════════════════════════════════════════════ -->
+<section id="view-dashboard" class="view">
+  <div class="dash-header">
+    <div>
+      <div class="dash-greeting" id="dash-greeting">Home Health Report</div>
+      <div class="dash-title" id="dash-title">Loading…</div>
+      <div class="dash-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="dash-loc-text">—</span>
+      </div>
+    </div>
+    <button class="btn-restart" id="btn-restart">← New search</button>
+  </div>
+
+  <div class="score-strip">
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 140 140">
+        <circle class="gauge-bg" cx="70" cy="70" r="58"/>
+        <circle class="gauge-fill" id="gauge-fill" cx="70" cy="70" r="58" stroke-dasharray="364.42" stroke-dashoffset="364.42"/>
+      </svg>
+      <div class="gauge-center">
+        <div class="gauge-number" id="gauge-number">—</div>
+        <div class="gauge-label">/ 100</div>
+      </div>
+    </div>
+    <div class="score-details">
+      <h2 id="score-headline">Calculating…</h2>
+      <div class="score-verdict" id="score-verdict"></div>
+      <div class="score-meta" id="score-meta"></div>
+    </div>
+  </div>
+
+  <div class="section-label">Score by Category</div>
+  <div class="cat-cards" id="cat-cards"></div>
+
+  <div class="section-label">All 32 Data Points</div>
+  <div class="filter-tabs" id="filter-tabs">
+    <button class="filter-tab active" data-f="all">All <span id="ft-all">(32)</span></button>
+    <button class="filter-tab critical" data-f="critical">● Critical <span id="ft-critical"></span></button>
+    <button class="filter-tab high" data-f="high">● High <span id="ft-high"></span></button>
+    <button class="filter-tab medium" data-f="medium">● Medium <span id="ft-medium"></span></button>
+    <button class="filter-tab low" data-f="low">● Low <span id="ft-low"></span></button>
+  </div>
+  <div class="dp-table" id="dp-table"></div>
+
+  <div class="section-label">Health Dimensions</div>
+  <div class="charts-grid">
+    <div class="chart-card"><div class="chart-card-title">Category Radar</div><canvas id="radar-chart" height="260"></canvas></div>
+    <div class="chart-card"><div class="chart-card-title">Score Breakdown</div><canvas id="bar-chart" height="260"></canvas></div>
+  </div>
+
+  <div class="interp-card">
+    <h3>🧠 Health Interpretation</h3>
+    <div class="interp-body" id="interp-body"></div>
+    <div class="recs-grid" id="recs-grid"></div>
+  </div>
+
+  <div class="footer-note">
+    Data sources: postcodes.io · Open-Meteo · Environment Agency · data.police.uk · OHID Fingertips · BGS (estimated) · DWI (estimated)<br>
+    Live data marked 🟢. Estimated/modelled data marked ⬜. Report generated <span id="report-date"></span>.
+  </div>
+</section>
+
+<script>
+// ══ DEFINITIONS ══════════════════════════════════════════════════
+
+const POINTS_DEF = [
+  { num:1,  id:'air_outdoor',    name:'Outdoor air quality',           sub:'NO₂, PM2.5, PM10, O₃',              source:'Open-Meteo/DEFRA',     impact:'~40,000 premature deaths/yr; cardiovascular & lung disease',              cat:'air',         pri:'critical', live:true  },
+  { num:2,  id:'radon',          name:'Radon potential',               sub:'Geological risk mapping',            source:'UKHSA / BGS',          impact:'2nd leading cause of lung cancer; ~1,100 deaths/yr',                     cat:'geology',     pri:'critical', live:false },
+  { num:3,  id:'epc',            name:'EPC + insulation + heating',    sub:'Energy performance, fabric, boiler', source:'MHCLG EPC register',   impact:'Cold homes linked to ~10,000 excess winter deaths/yr',                   cat:'property',    pri:'critical', live:false },
+  { num:4,  id:'flood',          name:'Flood risk',                    sub:'River, surface water, coastal',      source:'Environment Agency',   impact:'Direct mortality, mould, respiratory illness, mental health',            cat:'risk',        pri:'critical', live:true  },
+  { num:5,  id:'deprivation',    name:'Deprivation index',             sub:'IMD by LSOA',                        source:'ONS',                  impact:'Strongest single predictor of health outcomes; 7yr life expectancy gap', cat:'community',   pri:'high',     live:true  },
+  { num:6,  id:'noise',          name:'Noise maps',                    sub:'Road, rail, aircraft, industry',     source:'DEFRA noise maps',     impact:'Cardiovascular disease, sleep disruption, hypertension',                 cat:'environment', pri:'high',     live:false },
+  { num:7,  id:'water_drink',    name:'Drinking water compliance',     sub:'Nitrates, pesticides, chlorine, lead',source:'DWI',                 impact:'Cancer risk, gastrointestinal disease, developmental harm',              cat:'water',       pri:'high',     live:false },
+  { num:8,  id:'life_exp',       name:'Life expectancy by small area', sub:'Years at birth, both sexes',         source:'ONS',                  impact:'Composite of all health determinants; 5–15yr variation across UK',       cat:'community',   pri:'high',     live:true  },
+  { num:9,  id:'respiratory',    name:'Respiratory hospital admissions',sub:'Emergency admissions rate',          source:'NHS Digital',          impact:'Proxy for cumulative air & indoor pollutant burden by area',             cat:'community',   pri:'high',     live:true  },
+  { num:10, id:'vocs',           name:'VOCs from nearby industry',     sub:'Industrial emission sites',          source:'EA PRTR',              impact:'Carcinogenic, endocrine disruption, respiratory damage',                 cat:'air',         pri:'high',     live:true  },
+  { num:11, id:'sewage',         name:'Sewage overflow events',        sub:'Combined sewer overflows',           source:'Environment Agency',   impact:'Gastrointestinal illness, norovirus, waterborne pathogens',              cat:'water',       pri:'high',     live:false },
+  { num:12, id:'urban_heat',     name:'Urban heat island effect',      sub:'Urban vs rural temperature delta',   source:'DEFRA / satellite',    impact:'Heat mortality (esp. elderly); rising with climate change',              cat:'environment', pri:'high',     live:false },
+  { num:13, id:'construction',   name:'Construction era',              sub:'Pre-1919, interwar, postwar etc.',   source:'EPC / Land Registry',  impact:'Proxy for asbestos (pre-1999), lead paint, cold fabric, damp',          cat:'property',    pri:'high',     live:false },
+  { num:14, id:'air_burden',     name:'Air pollution health burden',   sub:'Mortality & morbidity estimates',    source:'DEFRA',                impact:'Monetised health cost by area; integrates multiple pollutants',          cat:'air',         pri:'high',     live:true  },
+  { num:15, id:'gp_access',      name:'GP access & wait times',        sub:'Appointments, wait >28 days',        source:'NHS Digital',          impact:'Delayed diagnosis; worse outcomes for cancer, CVD, diabetes',           cat:'community',   pri:'medium',   live:false },
+  { num:16, id:'pollen',         name:'Pollen counts by type',         sub:'Tree, grass, weed',                  source:'Met Office',           impact:'Asthma triggers; affects ~20% of UK population',                         cat:'air',         pri:'medium',   live:false },
+  { num:17, id:'brownfield',     name:'Historic brownfield / industrial land',sub:'Contaminated land register',  source:'EA + Historic England', impact:'Contaminated soil: benzene, heavy metals, hydrocarbons',                cat:'geology',     pri:'medium',   live:false },
+  { num:18, id:'green_space',    name:'Access to green space',         sub:'Parks, nature reserves, open land',  source:'ONS / OS Greenspace',  impact:'Mental health, physical activity, mortality reduction',                  cat:'environment', pri:'medium',   live:false },
+  { num:19, id:'mental_health',  name:'Mental health admission rates', sub:'Hospital admissions for MH',         source:'NHS Digital',          impact:'Local MH burden; correlated with noise, deprivation, pollution',        cat:'community',   pri:'medium',   live:true  },
+  { num:20, id:'obesity',        name:'Obesity & diabetes rates',      sub:'Adults overweight/obese, diabetes %',source:'OHID',                 impact:'Area-level chronic disease burden; lifestyle & food environment',        cat:'community',   pri:'medium',   live:true  },
+  { num:21, id:'water_hard',     name:'Water hardness',                sub:'Calcium carbonate concentration',    source:'Water company data',   impact:'Soft water linked to cardiovascular risk; hard water to kidney stones', cat:'water',       pri:'medium',   live:false },
+  { num:22, id:'subsidence',     name:'Subsidence risk',               sub:'Clay shrinkage, ground movement',    source:'BGS GeoSure',          impact:'Structural damage; damp ingress; indoor air quality degradation',       cat:'geology',     pri:'medium',   live:false },
+  { num:23, id:'mining',         name:'Ground stability / mining',     sub:'Mining heritage areas',              source:'BGS',                  impact:'Structural risk; radon pathway amplifier in mining areas',              cat:'geology',     pri:'medium',   live:false },
+  { num:24, id:'glazing',        name:'Double / triple glazing',       sub:'EPC glazing indicator',              source:'EPC register',         impact:'Cold home risk; condensation & mould indicator',                         cat:'property',    pri:'medium',   live:false },
+  { num:25, id:'flight_path',    name:'Flight path proximity',         sub:'Major airport approach corridors',   source:'CAA',                  impact:'Chronic noise exposure; childhood cognitive development',                cat:'environment', pri:'medium',   live:false },
+  { num:26, id:'powerlines',     name:'High voltage powerline proximity',sub:'Transmission network',             source:'National Grid',        impact:'Possible EMF association; evidence limited but persistent concern',     cat:'environment', pri:'low',      live:false },
+  { num:27, id:'tree_canopy',    name:'Tree canopy cover',             sub:'Urban/peri-urban canopy %',          source:'Local authority / OS', impact:'Cooling, air filtration, mental wellbeing',                              cat:'environment', pri:'low',      live:false },
+  { num:28, id:'mobile_mast',    name:'Mobile mast proximity',         sub:'4G/5G infrastructure density',       source:'Ofcom',                impact:'No proven health risk at public exposure levels; high customer concern', cat:'environment', pri:'low',      live:false },
+  { num:29, id:'coast_dist',     name:'Distance to coast / water',     sub:'Nearest coastline or blue space',    source:'Ordnance Survey',      impact:'Blue space linked to lower stress; minor mortality benefit',            cat:'environment', pri:'low',      live:false },
+  { num:30, id:'knotweed',       name:'Japanese knotweed risk',        sub:'Invasive species risk mapping',      source:'Environment Agency',   impact:'Structural/damp risk; psychological stress for homeowners',             cat:'geology',     pri:'low',      live:false },
+  { num:31, id:'solar',          name:'Solar panel presence',          sub:'EPC renewable energy data',          source:'EPC register',         impact:'Indirect — reduces fuel poverty risk; minimal direct health link',       cat:'property',    pri:'low',      live:false },
+  { num:32, id:'wildfire',       name:'Wildfire risk',                 sub:'Moor, heath, forest proximity',      source:'Forestry Commission',  impact:'Low UK relevance currently; smoke inhalation risk in affected zones',   cat:'risk',        pri:'low',      live:false },
+];
+
+const CATEGORIES = {
+  air:         { label:'Air',         icon:'🌬️', col:'#3b82f6', weight:0.20 },
+  property:    { label:'Property',    icon:'🏘️', col:'#a855f7', weight:0.13 },
+  risk:        { label:'Risk',        icon:'⚠️',  col:'#ef4444', weight:0.15 },
+  environment: { label:'Environment', icon:'🌿',  col:'#22c55e', weight:0.12 },
+  water:       { label:'Water',       icon:'💧',  col:'#06b6d4', weight:0.12 },
+  geology:     { label:'Geology',     icon:'🪨',  col:'#eab308', weight:0.10 },
+  community:   { label:'Community',   icon:'👥',  col:'#f97316', weight:0.18 },
+};
+
+// ══ LOOKUP TABLES ════════════════════════════════════════════════
+
+// % of homes in postcode area exceeding radon action level (~200 Bq/m³)
+const RADON = {
+  TR:40, PL:30, EX:22, TA:18, BA:17, SK:22, NN:25, DE:18, LE:18, SP:12,
+  SY:14, HR:14, GL:12, NP:11, CF:10, SA:10, LD:15, LL:10, AB:16, DD:13,
+  PH:14, FK:12, KY:11, DT:9,  BH:8,  GU:7,  RG:6,  OX:8,
+};
+
+// Water hardness mg/L CaCO3 by postcode area prefix
+const HARDNESS = {
+  // Very hard (>300)
+  EC:320, WC:320, E:300, N:310, NW:305, SE:295, SW:300, W:310,
+  EN:310, AL:305, WD:300, SG:295, HP:295, CM:290, CO:285, IG:295,
+  RM:290, SS:285, OX:290, MK:280, LU:275, CB:275, PE:270, IP:270, NR:265,
+  // Moderately hard (150-300)
+  LE:240, NN:250, NG:230, DE:210, ST:195, B:185, CV:190, WS:188, WV:185,
+  DY:183, RG:210, SO:195, PO:205, GU:200, RH:195, TN:210, ME:215, CT:225,
+  DA:220, BR:215, KT:200, SM:205, CR:200, TW:210, HA:205, UB:208, SL:200,
+  HG:175, HX:160, BD:155, LS:165, WF:170, YO:175, HU:185, DN:190, LN:195,
+  SR:155, DH:150, NE:145, TS:160, DL:155, HG:170, YO:175,
+  // Soft (<100)
+  IV:45,  KW:40,  HS:35,  ZE:35,  KA:60,  G:65,   EH:70,  TD:65,  ML:62,
+  PA:58,  FK:68,  KY:72,  PH:55,  DD:70,  AB:58,  CA:55,  LA:60,  PR:65,
+  FY:68,  BB:62,  BL:65,  OL:68,  M:75,   SK:80,  WN:70,  WA:75,  CW:72,
+  CH:70,  LL:58,  SA:60,  CF:65,  NP:70,  SY:68,  LD:55,  HR:72,
+  TR:62,  PL:65,  EX:70,  TA:75,  BS:80,  GL:85,  BA:82,
+};
+
+// Subsidence (clay shrinkage) risk 0-100 (100=high risk)
+const SUBSIDENCE = {
+  E:72, N:68, NW:65, SW:70, SE:65, W:68, WC:70, EC:70,
+  EN:62, AL:55, WD:58, HP:50, SL:48, TW:60, KT:62, SM:63, CR:65, BR:60,
+  DA:68, ME:55, TN:45, SS:62, CO:50, RM:65, IG:68, CM:52,
+  B:42, CV:38, WS:40, DY:35, WV:36, ST:30,
+};
+
+// High-risk mining areas (1=high, 0.5=moderate, 0=low)
+const MINING = {
+  CF:1, NP:1, SA:0.8, S:1, DN:0.8, WF:0.8, HX:0.7, HD:0.7, WN:0.6,
+  SK:0.7, DE:0.6, NG:0.8, DH:1, SR:0.8, NE:0.6, DL:0.5, TS:0.4,
+  CA:0.5, KY:0.6, ML:0.6, FK:0.4, TR:0.7, PL:0.4,
+  ST:0.7, CW:0.4, WA:0.3,
+};
+
+// Wildfire risk 0-100 (100=high)
+const WILDFIRE = {
+  IV:75, KW:70, PH:65, FK:55, AB:50, DD:40, HS:72, ZE:45,
+  EX:50, TA:45, DT:35, GU:40, RH:38, SO:30, PH:60, LD:45, SY:38,
+  SK:40, YO:35, TS:30, CA:35, LA:32,
+};
+
+// Radon score (% homes above action level → 0–100 health score)
+function radonScore(pct) {
+  if (pct >= 35) return { score:15, val:`~${pct}% of homes above action level (very high risk)` };
+  if (pct >= 20) return { score:32, val:`~${pct}% of homes above action level (high risk)` };
+  if (pct >= 12) return { score:52, val:`~${pct}% of homes above action level (moderate risk)` };
+  if (pct >= 6)  return { score:70, val:`~${pct}% of homes above action level (low-moderate risk)` };
+  return             { score:88, val:`~${pct}% of homes above action level (low risk)` };
+}
+
+// ══ UTILITIES ════════════════════════════════════════════════════
+
+function show(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function scoreColor(s) { return s>=70?'#22c55e':s>=45?'#f59e0b':'#ef4444'; }
+function scoreLabel(s) { return s>=85?'Excellent':s>=70?'Good':s>=55?'Fair':s>=40?'Poor':'Critical'; }
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function animateNumber(el,target,dur=1200){
+  let start=null;
+  const step=ts=>{
+    if(!start)start=ts;
+    const p=Math.min((ts-start)/dur,1);
+    const e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(lerp(0,target,e));
+    if(p<1)requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function postcodeArea(pc){ return (pc||'').replace(/\d.*/,'').trim().toUpperCase(); }
+
+function ruralCode(loc){
+  return (loc.rural_urban||'').toLowerCase();
+}
+
+async function safeGet(url){
+  try{ const r=await fetch(url); if(!r.ok)return null; return await r.json(); }
+  catch{ return null; }
+}
+
+// ══ LOADING STEP CONTROL ═════════════════════════════════════════
+
+const LS_ICONS = { location:'📍',air:'🌬️',flood:'🌊',water:'💧',community:'👥',industrial:'🏭',geo:'🪨',report:'🧠' };
+function setLS(id,state){
+  const el=document.getElementById('ls-'+id);
+  if(!el)return;
+  el.classList.remove('active','done');
+  const icon=el.querySelector('.step-icon');
+  if(state==='active'){ el.classList.add('active'); icon.innerHTML='<div class="spinner"></div>'; }
+  else if(state==='done'){ el.classList.add('done'); icon.textContent='✓'; }
+  else { icon.textContent=LS_ICONS[id]||'•'; }
+}
+
+// ══ API FETCHERS ══════════════════════════════════════════════════
+
+async function fetchPostcode(pc){
+  return safeGet(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc.replace(/\s/g,''))}`);
+}
+async function fetchAirQuality(lat,lng){
+  return safeGet(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=pm10,pm2_5,nitrogen_dioxide,ozone,european_aqi&timezone=Europe/London`);
+}
+async function fetchClimate(lat,lng){
+  return safeGet(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=uv_index_max,precipitation_sum,temperature_2m_max&forecast_days=7&timezone=Europe/London`);
+}
+async function fetchFlood(lat,lng){
+  return safeGet(`https://environment.data.gov.uk/flood-monitoring/id/floodAreas?lat=${lat}&long=${lng}&dist=3`);
+}
+async function fetchWaterQuality(lat,lng){
+  const pts=await safeGet(`https://environment.data.gov.uk/water-quality/id/sampling-point?lat=${lat}&long=${lng}&dist=5&_limit=3`);
+  if(!pts||!Array.isArray(pts.items)||!pts.items.length)return null;
+  const meas=[];
+  for(const p of pts.items.slice(0,2)){
+    const url=p['@id'];
+    if(!url)continue;
+    const d=await safeGet(`https://environment.data.gov.uk/water-quality/data/measurement?samplingPoint=${encodeURIComponent(url)}&_limit=80&_sort=-sample%2FsampleDateTime`);
+    if(d&&Array.isArray(d.items))meas.push(...d.items.map(m=>({...m,_pt:p.label})));
+  }
+  return{points:pts.items,measurements:meas};
+}
+async function fetchIndustrial(lat,lng){
+  return safeGet(`https://environment.data.gov.uk/industrial/id/facility?lat=${lat}&long=${lng}&dist=3&_limit=20`);
+}
+async function fetchCrime(lat,lng){
+  const now=new Date(); now.setMonth(now.getMonth()-2);
+  const d=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  return safeGet(`https://data.police.uk/api/crimes-at-location?lat=${lat}&lng=${lng}&date=${d}`);
+}
+async function fetchFingertips(loc){
+  const code=loc.codes&&loc.codes.admin_district;
+  const lsoa=loc.codes&&loc.codes.lsoa;
+  if(!code||loc.country!=='England')return null;
+  const dist=`90366,90362,41201,20601,848`;
+  const[dData,lData]=await Promise.all([
+    safeGet(`https://fingertips.phe.org.uk/api/latest_data/by_indicator_id?indicator_ids=${dist}&area_code=${code}&area_type_id=101`),
+    lsoa?safeGet(`https://fingertips.phe.org.uk/api/latest_data/by_indicator_id?indicator_ids=91872&area_code=${lsoa}&area_type_id=7`):Promise.resolve(null),
+  ]);
+  return{district:dData,lsoa:lData};
+}
+
+function parseFT(data){
+  if(!data||!Array.isArray(data))return{};
+  const m={};
+  data.forEach(i=>{ if(i.IndicatorId){ m[i.IndicatorId]={val:i.Value,sig:i.ComparedToEnglandValueOrPersons,period:i.Timeperiod}; } });
+  return m;
+}
+function ftScore(sig,higherIsBetter=false){
+  // sig: 1=worse, 2=similar, 3=better than England
+  if(sig===3)return higherIsBetter?84:38;
+  if(sig===1)return higherIsBetter?38:84;
+  return 62;
+}
+
+// ══ SCORE COMPUTATION ════════════════════════════════════════════
+
+const AIRPORTS=[
+  {n:'Heathrow',lat:51.4775,lng:-0.4614},{n:'Gatwick',lat:51.1537,lng:-0.1821},
+  {n:'Manchester',lat:53.3536,lng:-2.2750},{n:'Birmingham',lat:52.4539,lng:-1.748},
+  {n:'Edinburgh',lat:55.9508,lng:-3.3615},{n:'Glasgow',lat:55.8642,lng:-4.4331},
+  {n:'Bristol',lat:51.3827,lng:-2.7191},{n:'Leeds Bradford',lat:53.8659,lng:-1.6602},
+  {n:'Newcastle',lat:55.0375,lng:-1.6917},{n:'East Midlands',lat:52.8311,lng:-1.3278},
+  {n:'Liverpool',lat:53.3337,lng:-2.8497},{n:'Stansted',lat:51.885,lng:0.235},
+  {n:'Luton',lat:51.8747,lng:-0.3683},{n:'Cardiff',lat:51.3967,lng:-3.3433},
+  {n:'Aberdeen',lat:57.2019,lng:-2.1978},{n:'Belfast Intl',lat:54.6575,lng:-6.2158},
+  {n:'London City',lat:51.5048,lng:0.0495},{n:'Southampton',lat:50.9503,lng:-1.3568},
+  {n:'Exeter',lat:50.7344,lng:-3.4139},{n:'Inverness',lat:57.5425,lng:-4.0475},
+];
+
+const COAST_PTS=[
+  [50.06,-5.71],[50.45,-4.45],[50.72,-3.52],[50.72,-1.87],[50.82,-0.37],[51.11,1.40],
+  [51.37,1.43],[51.52,1.02],[51.74,1.26],[52.18,1.76],[52.98,1.31],[53.50,0.35],
+  [53.70,0.23],[53.81,0.19],[54.09,-0.18],[54.48,-0.62],[54.98,-1.43],[55.10,-1.56],
+  [55.42,-1.70],[55.97,-2.09],[56.08,-3.13],[56.32,-2.80],[57.07,-2.06],[57.68,-1.79],
+  [58.44,-3.10],[58.62,-3.51],[57.88,-5.06],[57.27,-5.72],[56.41,-5.47],[55.86,-4.87],
+  [55.21,-5.08],[55.35,-4.79],[54.98,-5.00],[54.65,-3.57],[54.05,-3.19],[53.77,-3.05],
+  [53.43,-3.28],[53.23,-4.61],[52.86,-4.71],[52.40,-4.08],[51.65,-4.97],[51.72,-4.70],
+  [51.39,-3.17],[51.57,-3.96],[51.62,-5.06],[50.24,-5.52],
+];
+
+function computeScores(raw, loc){
+  const area=postcodeArea(loc.postcode||'');
+  const ru=ruralCode(loc);
+  const lat=loc.latitude, lng=loc.longitude;
+  const country=loc.country||'England';
+  const region=loc.region||loc.european_electoral_region||'';
+  const ft=raw.fingertips?{...parseFT(raw.fingertips.district),...parseFT(raw.fingertips.lsoa)}:{};
+
+  // Air quality helpers
+  const air=raw.air&&raw.air.current;
+  const pm25=air?+(air.pm2_5||0):8;
+  const pm10=air?+(air.pm10||0):14;
+  const no2=air?+(air.nitrogen_dioxide||0):18;
+  const o3=air?+(air.ozone||0):60;
+  const aqi=air?+(air.european_aqi||0):20;
+
+  // Flood
+  const floodCount=(raw.flood&&Array.isArray(raw.flood.items))?raw.flood.items.length:0;
+
+  // Water quality measurements
+  const wm=raw.water&&raw.water.measurements||[];
+  const getLatestMeas=test=>{ const ms=wm.filter(m=>m.determinand&&m.determinand.label&&test(m.determinand.label.toLowerCase())).sort((a,b)=>(b.sample&&b.sample.sampleDateTime||'').localeCompare(a.sample&&a.sample.sampleDateTime||'')); return ms[0]||null; };
+  const bodMeas=getLatestMeas(l=>l.includes('biochemical oxygen demand')||l.includes('bod '));
+  const ammMeas=getLatestMeas(l=>l.includes('ammonia')||l.includes('ammoniacal'));
+  const pHMeas=getLatestMeas(l=>l==='ph'||l.includes('ph value'));
+
+  // Industrial sites
+  const indCount=(raw.industrial&&Array.isArray(raw.industrial.items))?raw.industrial.items.length:
+                 (raw.industrial&&Array.isArray(raw.industrial))?raw.industrial.length:
+                 (ru.includes('major')?2:ru.includes('city')?1:0);
+
+  // Crime
+  const crimeCount=Array.isArray(raw.crime)?raw.crime.length:0;
+
+  // Climate
+  const cl=raw.climate&&raw.climate.daily;
+  const uvMax=cl?Math.max(...(cl.uv_index_max||[3])):3;
+
+  // Nearest airport
+  const ap=AIRPORTS.map(a=>({...a,km:haversineKm(lat,lng,a.lat,a.lng)})).sort((a,b)=>a.km-b.km)[0];
+
+  // Nearest coast
+  const coastKm=Math.min(...COAST_PTS.map(([clat,clng])=>haversineKm(lat,lng,clat,clng)));
+
+  // Radon lookup
+  const radonPct=RADON[area]||4;
+  const {score:radonS,val:radonVal}=radonScore(radonPct);
+
+  // Water hardness
+  const hardnessVal=HARDNESS[area]||180;
+  const hardnessScore=hardnessVal>300?50:hardnessVal>200?72:hardnessVal>100?90:65;
+  const hardnessLabel=hardnessVal>300?'Very hard':hardnessVal>200?'Hard':hardnessVal>100?'Moderately hard':'Soft';
+
+  // Subsidence
+  const subRisk=SUBSIDENCE[area]||20;
+  const subScore=Math.round(100-(subRisk*0.9));
+
+  // Mining
+  const mineRisk=MINING[area]||0;
+  const mineScore=mineRisk>=1?28:mineRisk>=0.7?42:mineRisk>=0.4?62:88;
+
+  // Wildfire
+  const wildRisk=WILDFIRE[area]||8;
+  const wildScore=wildRisk>=70?18:wildRisk>=50?35:wildRisk>=35?55:88;
+
+  // Urban-derived estimates
+  const isUrbanMajor=ru.includes('urban major');
+  const isUrbanCity=ru.includes('urban city')||ru.includes('urban town');
+  const isRural=ru.includes('rural');
+  const urbanFactor=isUrbanMajor?0:isUrbanCity?0.35:isRural?1:0.6;
+
+  const scores = {
+    // ── AIR ──────────────────────────────────────────────
+    air_outdoor:(()=>{
+      let s=100;
+      if(pm25>5) s-=Math.min(40,(pm25-5)*2.5);
+      if(pm10>15)s-=Math.min(25,(pm10-15)*1.2);
+      if(no2>10) s-=Math.min(20,(no2-10)*1.0);
+      if(o3>100) s-=Math.min(15,(o3-100)*0.3);
+      s=Math.max(0,Math.round(s));
+      return{score:s,val:`PM2.5: ${pm25.toFixed(1)} μg/m³ · NO₂: ${no2.toFixed(1)} μg/m³ · AQI: ${aqi}`};
+    })(),
+    air_burden:(()=>{
+      const burden=pm25*2+no2*0.5+aqi*0.3;
+      const s=Math.max(0,Math.round(100-burden*1.8));
+      return{score:s,val:`Combined pollution burden index: ${burden.toFixed(0)}`};
+    })(),
+    vocs:(()=>{
+      const s=indCount===0?92:indCount<=1?75:indCount<=3?55:indCount<=6?35:18;
+      return{score:s,val:`${indCount} industrial emitter${indCount!==1?'s':''} within 3km`};
+    })(),
+    pollen:(()=>{
+      const month=new Date().getMonth()+1;
+      const isNorth=lat>54;
+      let s;
+      if(month>=3&&month<=5) s=isNorth?60:50; // spring tree pollen
+      else if(month>=6&&month<=8) s=45;         // peak grass pollen
+      else if(month>=9&&month<=10)s=72;          // weed pollen
+      else s=92;                                  // winter
+      return{score:s,val:`${month>=6&&month<=8?'High grass pollen':month>=3&&month<=5?'Elevated tree pollen':month>=9&&month<=10?'Weed pollen season':'Low pollen season'}`};
+    })(),
+
+    // ── PROPERTY ─────────────────────────────────────────
+    epc:(()=>{
+      let base=58;
+      if(region==='London')base-=10;
+      if(region.includes('Midland'))base-=4;
+      if(isRural)base+=6;
+      if(country==='Scotland')base+=5;
+      base=Math.max(30,Math.min(78,base));
+      const band=base>=75?'B/C':base>=60?'C/D':'D/E';
+      return{score:base,val:`Estimated EPC band ${band} based on regional housing stock`};
+    })(),
+    construction:(()=>{
+      let pre1945Pct=region==='London'?55:region.includes('Midland')?45:isUrbanMajor?48:isRural?35:40;
+      const s=pre1945Pct>=50?35:pre1945Pct>=40?52:pre1945Pct>=30?68:80;
+      return{score:s,val:`~${pre1945Pct}% of local housing stock estimated pre-1945`};
+    })(),
+    glazing:(()=>{
+      let base=58;
+      if(isRural)base+=10;
+      if(region==='London')base-=8;
+      if(country==='Scotland')base+=5;
+      base=Math.max(35,Math.min(85,base));
+      return{score:base,val:`~${base}% of local homes estimated double/triple glazed`};
+    })(),
+    solar:(()=>{
+      const southWest=['TR','PL','EX','TA','BA','BS','DT','BH','SO','GU'];
+      const southEast=['CT','ME','TN','BN','PO','RH','KT','CR','SM','DA'];
+      let s=southWest.includes(area)?80:southEast.includes(area)?72:country==='Scotland'?48:60;
+      return{score:s,val:`~${Math.round(s*0.25)}% of homes with solar panels (regional estimate)`};
+    })(),
+
+    // ── RISK ─────────────────────────────────────────────
+    flood:(()=>{
+      const s=floodCount===0?95:floodCount<=1?78:floodCount<=3?60:floodCount<=7?40:20;
+      return{score:s,val:`${floodCount} flood risk area${floodCount!==1?'s':''} within 3km`};
+    })(),
+    wildfire:{score:wildScore,val:`${wildScore<40?'High':wildScore<60?'Moderate':'Low'} wildfire risk for this area type`},
+
+    // ── ENVIRONMENT ───────────────────────────────────────
+    noise:(()=>{
+      const s=isUrbanMajor?28:isUrbanCity?50:ru.includes('urban minor')?65:ru.includes('rural town')?78:88;
+      const label=s<40?'High noise environment':s<65?'Moderate noise levels':'Low ambient noise';
+      return{score:s,val:label+' ('+ru+')'};
+    })(),
+    urban_heat:(()=>{
+      const delta=isUrbanMajor?5:isUrbanCity?3:ru.includes('urban minor')?1.5:0.3;
+      const s=Math.round(90-delta*12);
+      return{score:Math.max(20,s),val:`Estimated +${delta.toFixed(1)}°C urban heat island effect`};
+    })(),
+    green_space:(()=>{
+      const s=isUrbanMajor?40:isUrbanCity?55:ru.includes('urban minor')?65:ru.includes('rural town')?78:90;
+      return{score:s,val:`${s>=75?'Good':s>=55?'Moderate':'Limited'} green space access for area type`};
+    })(),
+    flight_path:(()=>{
+      const km=ap.km;
+      const s=km<3?12:km<10?30:km<20?58:km<40?80:95;
+      return{score:s,val:`${km.toFixed(1)}km from ${ap.n} Airport`};
+    })(),
+    powerlines:{score:80,val:'Low risk nationally — proximity to HV lines affects small fraction of properties'},
+    tree_canopy:(()=>{
+      const s=isUrbanMajor?32:isUrbanCity?48:ru.includes('rural town')?65:isRural?85:55;
+      return{score:s,val:`Estimated ${Math.round(s*0.4)}% tree canopy cover for area type`};
+    })(),
+    mobile_mast:(()=>{
+      const s=isRural?70:82;
+      return{score:s,val:isRural?'Rural area — moderate 4G/5G coverage density':'Urban area — dense mast infrastructure'};
+    })(),
+    coast_dist:(()=>{
+      const s=coastKm<5?92:coastKm<20?85:coastKm<50?78:70;
+      return{score:s,val:`${coastKm.toFixed(0)}km from nearest coastline`};
+    })(),
+
+    // ── WATER ─────────────────────────────────────────────
+    water_drink:(()=>{
+      let comp=99.8;
+      if(area==='L'||area==='M'||area==='B')comp=99.6;
+      const s=comp>=99.9?92:comp>=99.7?82:comp>=99.5?70:55;
+      return{score:s,val:`~${comp}% drinking water compliance (DWI regional estimate)`};
+    })(),
+    sewage:(()=>{
+      const bod=bodMeas?parseFloat(bodMeas.result):null;
+      const amm=ammMeas?parseFloat(ammMeas.result):null;
+      let s=70;
+      if(bod!==null)s=bod<2?90:bod<4?75:bod<8?55:35;
+      if(amm!==null)s=Math.min(s,amm<0.1?92:amm<0.5?75:amm<1?50:28);
+      const desc=bod!==null?`BOD ${bod.toFixed(1)} mg/L`:`Estimated from ${isUrbanMajor?'high':'low'} urban CSO density`;
+      return{score:Math.round(s),val:desc};
+    })(),
+    water_hard:{score:hardnessScore,val:`${hardnessLabel} water (~${hardnessVal} mg/L CaCO₃ estimated)`},
+
+    // ── GEOLOGY ───────────────────────────────────────────
+    radon:{score:radonS,val:radonVal},
+    brownfield:(()=>{
+      const s=isUrbanMajor?35:isUrbanCity?52:ru.includes('rural town')?72:85;
+      return{score:s,val:`${s<45?'High':s<65?'Moderate':'Low'} historic brownfield density for area type`};
+    })(),
+    subsidence:{score:subScore,val:`${subRisk>50?'High':subRisk>25?'Moderate':'Low'} clay shrinkage risk (${subRisk}% risk index)`},
+    mining:{score:mineScore,val:`${mineRisk>=0.7?'Significant':mineRisk>=0.4?'Moderate':'Minimal'} historic mining activity in postcode area`},
+    knotweed:(()=>{
+      const walesAreas=['CF','NP','SA','LL','SY','LD','HR'];
+      const highUrban=isUrbanMajor&&mineRisk>0;
+      const s=walesAreas.includes(area)?38:highUrban?45:isUrbanCity?62:78;
+      return{score:s,val:`${s<45?'High':s<65?'Moderate':'Low'} Japanese knotweed risk for area`};
+    })(),
+
+    // ── COMMUNITY ─────────────────────────────────────────
+    deprivation:(()=>{
+      const item=ft[91872];
+      if(item&&item.val!==null){
+        const imd=item.val; // lower IMD score = more deprived
+        const s=imd<10?25:imd<15?38:imd<22?55:imd<28?70:85;
+        return{score:s,val:`IMD score: ${imd.toFixed(1)} (lower = more deprived)`,live:true};
+      }
+      const s=isUrbanMajor?45:isUrbanCity?58:72;
+      return{score:s,val:`Estimated — ${isUrbanMajor?'higher':'lower'} deprivation typical for area type`};
+    })(),
+    life_exp:(()=>{
+      const m=ft[90366],f=ft[90362];
+      if(m&&m.val&&f&&f.val){
+        const avgLE=(m.val+f.val)/2;
+        const s=avgLE>82?88:avgLE>80?78:avgLE>78?64:avgLE>76?48:35;
+        return{score:s,val:`${m.val.toFixed(1)}yr (♂) / ${f.val.toFixed(1)}yr (♀) life expectancy at birth`,live:true};
+      }
+      const s=isUrbanMajor?50:isUrbanCity?62:72;
+      return{score:s,val:'Life expectancy data unavailable for this area type'};
+    })(),
+    respiratory:(()=>{
+      const item=ft[41201];
+      if(item&&item.val!==null){
+        const s=ftScore(item.sig);
+        const label=item.sig===3?'Below England average':item.sig===1?'Above England average':'Near England average';
+        return{score:s,val:`Respiratory admissions: ${item.val?item.val.toFixed(0):''} per 100k (${label})`,live:true};
+      }
+      const s=Math.round(50+urbanFactor*30);
+      return{score:s,val:`Estimated from regional pollution & urban density patterns`};
+    })(),
+    gp_access:(()=>{
+      let base=isUrbanMajor?62:isUrbanCity?68:isRural?52:60;
+      if(country==='Scotland')base+=5;
+      return{score:base,val:`${base>=70?'Good':base>=55?'Moderate':'Limited'} GP access estimated for area type`};
+    })(),
+    mental_health:(()=>{
+      const item=ft[848];
+      if(item&&item.val!==null){
+        const s=ftScore(item.sig);
+        const label=item.sig===3?'Below England average':item.sig===1?'Above England average':'Near England average';
+        return{score:s,val:`MH admissions ${label} for this district`,live:true};
+      }
+      const s=Math.round(55+urbanFactor*25);
+      return{score:s,val:'Estimated from deprivation and urban density correlation'};
+    })(),
+    obesity:(()=>{
+      const item=ft[20601];
+      if(item&&item.val!==null){
+        const pct=item.val;
+        const s=pct<50?85:pct<58?70:pct<65?52:35;
+        const label=item.sig===3?'Below England average':item.sig===1?'Above England average':'Near England average';
+        return{score:s,val:`${pct.toFixed(0)}% adults overweight/obese (${label})`,live:true};
+      }
+      const s=Math.round(58+urbanFactor*15);
+      return{score:s,val:'Estimated from regional lifestyle & food environment data'};
+    })(),
+  };
+
+  return POINTS_DEF.map(def=>{
+    const s=scores[def.id]||{score:60,val:'Data unavailable'};
+    const isLive=def.live&&(s.live||!!raw[def.id==='flood'?'flood':def.id==='air_outdoor'||def.id==='air_burden'||def.id==='vocs'?'air':def.id==='life_exp'||def.id==='respiratory'||def.id==='deprivation'||def.id==='mental_health'||def.id==='obesity'?'fingertips':'_']);
+    return{...def,score:s.score,val:s.val,live:def.live&&(s.live||['air_outdoor','air_burden','vocs','flood','life_exp','respiratory','deprivation','mental_health','obesity'].includes(def.id)&&!s.val.includes('Estimated'))};
+  });
+}
+
+function computeCategoryScores(points){
+  const cats={};
+  Object.entries(CATEGORIES).forEach(([key,cat])=>{
+    const pts=points.filter(p=>p.cat===key);
+    if(!pts.length){cats[key]={...cat,score:60};return;}
+    cats[key]={...cat,score:Math.round(pts.reduce((sum,p)=>sum+p.score,0)/pts.length)};
+  });
+  return cats;
+}
+
+function computeOverall(catScores){
+  return Math.round(Object.entries(catScores).reduce((sum,[,c])=>sum+c.score*c.weight,0));
+}
+
+// ══ RENDERING ════════════════════════════════════════════════════
+
+function renderCategoryCards(catScores){
+  const el=document.getElementById('cat-cards');
+  el.innerHTML='';
+  Object.entries(catScores).forEach(([,cat],i)=>{
+    const col=scoreColor(cat.score);
+    const card=document.createElement('div');
+    card.className='cat-card';
+    card.style.animationDelay=`${i*0.06}s`;
+    card.innerHTML=`<div class="cat-card-icon">${cat.icon}</div>
+      <div class="cat-card-score" style="color:${col}">${cat.score}</div>
+      <div class="cat-card-name">${cat.label}</div>
+      <div class="cat-card-bar"><div class="cat-card-bar-fill" style="background:${col}" data-w="${cat.score}"></div></div>`;
+    el.appendChild(card);
+    setTimeout(()=>{ card.querySelector('.cat-card-bar-fill').style.width=cat.score+'%'; },300+i*60);
+  });
+}
+
+const CAT_TAG_STYLE={
+  air:'background:rgba(96,165,250,.15);color:#93c5fd',
+  property:'background:rgba(192,132,252,.15);color:#d8b4fe',
+  risk:'background:rgba(248,113,113,.15);color:#fca5a5',
+  environment:'background:rgba(74,222,128,.15);color:#86efac',
+  water:'background:rgba(34,211,238,.15);color:#67e8f9',
+  geology:'background:rgba(234,179,8,.15);color:#fde047',
+  community:'background:rgba(251,146,60,.15);color:#fdba74',
+};
+
+function renderDPTable(points){
+  const table=document.getElementById('dp-table');
+  table.innerHTML='';
+
+  points.forEach(p=>{
+    const col=scoreColor(p.score);
+    const row=document.createElement('div');
+    row.className='dp-row';
+    row.dataset.pri=p.pri;
+    row.dataset.id=p.id;
+    row.innerHTML=`
+      <div class="dp-row-head">
+        <div class="dp-pri-bar ${p.pri}"></div>
+        <div class="dp-num">${p.num}</div>
+        <div class="dp-info"><div class="dp-name">${p.name}</div><div class="dp-sub">${p.sub}</div></div>
+        <div class="dp-source-tag">${p.source}</div>
+        <div class="dp-score-val" style="color:${col}">${p.score}</div>
+        <div class="dp-cat-tag" style="${CAT_TAG_STYLE[p.cat]||''}">${CATEGORIES[p.cat]?CATEGORIES[p.cat].icon+' '+CATEGORIES[p.cat].label:p.cat}</div>
+        <div class="dp-arrow">▾</div>
+      </div>
+      <div class="dp-expand">
+        <div class="dp-impact">${p.impact}</div>
+        <div class="dp-value-row">
+          <span class="dp-value">${p.val||'No data'}</span>
+          <span class="${p.live?'dp-live-badge':'dp-est-badge'}">${p.live?'🟢 Live data':'⬜ Estimated'}</span>
+        </div>
+      </div>`;
+    row.addEventListener('click',()=>row.classList.toggle('open'));
+    table.appendChild(row);
+  });
+
+  // Filter tabs
+  const counts={critical:0,high:0,medium:0,low:0};
+  points.forEach(p=>counts[p.pri]++);
+  document.getElementById('ft-all').textContent=`(${points.length})`;
+  document.getElementById('ft-critical').textContent=`(${counts.critical})`;
+  document.getElementById('ft-high').textContent=`(${counts.high})`;
+  document.getElementById('ft-medium').textContent=`(${counts.medium})`;
+  document.getElementById('ft-low').textContent=`(${counts.low})`;
+}
+
+function setupFilterTabs(points){
+  document.querySelectorAll('.filter-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const f=tab.dataset.f;
+      document.querySelectorAll('.dp-row').forEach(row=>{
+        row.style.display=(f==='all'||row.dataset.pri===f)?'':'none';
+      });
+    });
+  });
+}
+
+function renderScoreStrip(userData, overall, catScores, loc){
+  const col=scoreColor(overall);
+  const circumference=364.42;
+  const gauge=document.getElementById('gauge-fill');
+  gauge.style.stroke=col;
+  setTimeout(()=>{ gauge.style.strokeDashoffset=circumference-(circumference*overall/100); },300);
+  const numEl=document.getElementById('gauge-number');
+  numEl.style.color=col;
+  setTimeout(()=>animateNumber(numEl,overall),300);
+
+  document.getElementById('dash-greeting').textContent=`Hello, ${userData.name.split(' ')[0]} 👋`;
+  document.getElementById('dash-title').textContent='Home Health Score';
+  const locParts=[userData.postcode.toUpperCase(),loc.admin_district,loc.region].filter(Boolean);
+  document.getElementById('dash-loc-text').textContent=locParts.join(', ');
+
+  document.getElementById('score-headline').textContent=`${scoreLabel(overall)} Home Environment`;
+  const topCats=Object.values(catScores).sort((a,b)=>b.score-a.score).slice(0,2).map(c=>c.label).join(' & ');
+  const botCats=Object.values(catScores).sort((a,b)=>a.score-b.score).slice(0,2).map(c=>c.label).join(' & ');
+  document.getElementById('score-verdict').textContent=`Strongest: ${topCats}. Attention needed: ${botCats}.`;
+
+  const meta=document.getElementById('score-meta');
+  meta.innerHTML='';
+  Object.values(catScores).forEach(cat=>{
+    const el=document.createElement('div');
+    el.className='smeta-item';
+    const c=scoreColor(cat.score);
+    el.style.cssText=`background:${c}18;color:${c}`;
+    el.textContent=`${cat.icon} ${cat.label} ${cat.score}`;
+    meta.appendChild(el);
+  });
+}
+
+function renderCharts(catScores){
+  const labels=Object.values(catScores).map(c=>c.label);
+  const scores=Object.values(catScores).map(c=>c.score);
+  const cols=Object.values(catScores).map(c=>c.col);
+
+  const radarCtx=document.getElementById('radar-chart').getContext('2d');
+  new Chart(radarCtx,{
+    type:'radar',
+    data:{ labels, datasets:[{ label:'Score', data:scores,
+      backgroundColor:'rgba(59,130,246,.12)', borderColor:'rgba(59,130,246,.7)',
+      pointBackgroundColor:cols, pointRadius:5, borderWidth:2 }]},
+    options:{ animation:{duration:1200}, scales:{ r:{ min:0,max:100,
+      ticks:{stepSize:25,color:'rgba(148,163,184,.5)',font:{size:10},backdropColor:'transparent'},
+      grid:{color:'rgba(255,255,255,.06)'}, angleLines:{color:'rgba(255,255,255,.06)'},
+      pointLabels:{color:'#94a3b8',font:{size:11,family:'Inter'}} }},
+      plugins:{legend:{display:false}} }
+  });
+
+  const barCtx=document.getElementById('bar-chart').getContext('2d');
+  new Chart(barCtx,{
+    type:'bar',
+    data:{ labels, datasets:[{ data:scores, backgroundColor:cols.map(c=>c+'88'), borderColor:cols, borderWidth:2, borderRadius:6 }]},
+    options:{ animation:{duration:1000}, indexAxis:'y',
+      scales:{ x:{min:0,max:100,grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#94a3b8',font:{size:11}}},
+        y:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:11,family:'Inter'}}} },
+      plugins:{legend:{display:false}} }
+  });
+}
+
+function renderInterpretation(userData, points, overall, catScores){
+  const first=userData.name.split(' ')[0];
+  const worst=Object.values(catScores).sort((a,b)=>a.score-b.score)[0];
+  const best=Object.values(catScores).sort((a,b)=>b.score-a.score)[0];
+
+  let intro;
+  if(overall>=80) intro=`<strong>${first}, your home environment scores in the top tier.</strong> The 32-point analysis shows a genuinely healthy living environment across air, water, and community health dimensions.`;
+  else if(overall>=65) intro=`<strong>${first}, your home scores well overall with specific areas to monitor.</strong> Most dimensions are positive, though a few data points warrant your attention.`;
+  else if(overall>=45) intro=`<strong>${first}, your home has notable environmental risk factors.</strong> The analysis flags meaningful concerns across several categories — particularly ${worst.icon} ${worst.label}.`;
+  else intro=`<strong>${first}, the analysis has identified several significant risk factors.</strong> We'd strongly encourage reviewing the critical and high-priority data points below.`;
+
+  const criticalFails=points.filter(p=>p.pri==='critical'&&p.score<50).map(p=>p.name);
+  const detail=`Your strongest area is <strong>${best.icon} ${best.label} (${best.score}/100)</strong>. Your weakest is <strong>${worst.icon} ${worst.label} (${worst.score}/100)</strong>.`
+    +(criticalFails.length?` <strong>Critical attention:</strong> ${criticalFails.join(', ')}.`:'');
+
+  document.getElementById('interp-body').innerHTML=`${intro}<br><br>${detail}`;
+
+  const recs=[];
+  points.filter(p=>p.score<55).sort((a,b)=>{
+    const pri={'critical':0,'high':1,'medium':2,'low':3};
+    return (pri[a.pri]||3)-(pri[b.pri]||3);
+  }).slice(0,8).forEach(p=>{
+    const recMap={
+      radon:{icon:'☢️',text:'Test your home for radon with a free UKHSA kit. If >200 Bq/m³, install a radon sump system.'},
+      flood:{icon:'🌊',text:'Register for free EA flood alerts at gov.uk/flood. Review your building and contents insurance for flood cover.'},
+      air_outdoor:{icon:'🌬️',text:'Install a HEPA air purifier indoors. Plan outdoor exercise routes away from main roads.'},
+      epc:{icon:'🏠',text:'Apply for a free Home Energy Check and consider cavity wall/loft insulation grants via the ECO4 scheme.'},
+      deprivation:{icon:'👥',text:'Access Local Authority health services and community support programmes available in high-deprivation areas.'},
+      noise:{icon:'🔇',text:'Use acoustic-grade secondary glazing and soft furnishings to reduce indoor noise levels.'},
+      subsidence:{icon:'🪨',text:'Get a homebuyer\'s structural survey and check your insurance includes subsidence cover.'},
+      construction:{icon:'🏗️',text:'Pre-1919 homes may contain lead paint or asbestos — commission a hazardous materials survey before any renovation.'},
+      mining:{icon:'⛏️',text:'Register with the Coal Authority for free ground stability reports. Consider specialist structural insurance.'},
+      vocs:{icon:'🏭',text:'Check EA air quality monitoring for your area. Install indoor VOC detectors and maximise ventilation.'},
+      sewage:{icon:'💧',text:'Report CSO events to the Environment Agency. Avoid contact with local waterways after heavy rain.'},
+      brownfield:{icon:'🏗️',text:'Request a Phase 1 Environmental Survey before purchase. Avoid disturbing ground without specialist guidance.'},
+      urban_heat:{icon:'🌡️',text:'Plant trees or green roofs where possible. Ensure adequate home cooling and check on elderly neighbours during heatwaves.'},
+      mental_health:{icon:'🧠',text:'Access NHS talking therapies (IAPT) and Mind local services. Community green space has a proven MH benefit.'},
+    };
+    const r=recMap[p.id];
+    if(r) recs.push(r);
+  });
+
+  const recsEl=document.getElementById('recs-grid');
+  recsEl.innerHTML='';
+  recs.slice(0,9).forEach(r=>{
+    const el=document.createElement('div');
+    el.className='rec-item';
+    el.innerHTML=`<span style="font-size:1.1rem;flex-shrink:0">${r.icon}</span><span>${r.text}</span>`;
+    recsEl.appendChild(el);
+  });
+
+  document.getElementById('report-date').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+
+// ══ VALIDATION ════════════════════════════════════════════════════
+
+function validateForm(){
+  let ok=true;
+  const name=document.getElementById('inp-name').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  const pc=document.getElementById('inp-postcode').value.trim();
+
+  ['name','email','postcode'].forEach(f=>{
+    document.getElementById('inp-'+f).classList.remove('error');
+    document.getElementById('err-'+f).classList.remove('visible');
+  });
+
+  if(!name){ document.getElementById('inp-name').classList.add('error'); document.getElementById('err-name').classList.add('visible'); ok=false; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('inp-email').classList.add('error'); document.getElementById('err-email').classList.add('visible'); ok=false; }
+  if(!/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(pc)){ document.getElementById('inp-postcode').classList.add('error'); document.getElementById('err-postcode').classList.add('visible'); ok=false; }
+  return ok?{name,email,postcode:pc}:null;
+}
+
+// ══ MAIN FLOW ════════════════════════════════════════════════════
+
+async function runAnalysis(userData){
+  show('view-loading');
+  ['location','air','flood','water','community','industrial','geo','report'].forEach(id=>setLS(id,''));
+
+  setLS('location','active');
+  const pcData=await fetchPostcode(userData.postcode);
+  if(!pcData||pcData.status!==200){ alert('Invalid postcode — please try again.'); show('view-form'); return; }
+  const loc=pcData.result;
+  setLS('location','done');
+
+  setLS('air','active');
+  const [airData,climateData]=await Promise.all([fetchAirQuality(loc.latitude,loc.longitude),fetchClimate(loc.latitude,loc.longitude)]);
+  setLS('air','done');
+
+  setLS('flood','active');
+  const [floodData,crimeData]=await Promise.all([fetchFlood(loc.latitude,loc.longitude),fetchCrime(loc.latitude,loc.longitude)]);
+  setLS('flood','done');
+
+  setLS('water','active');
+  const waterData=await fetchWaterQuality(loc.latitude,loc.longitude);
+  setLS('water','done');
+
+  setLS('community','active');
+  const ftData=await fetchFingertips(loc);
+  setLS('community','done');
+
+  setLS('industrial','active');
+  const indData=await fetchIndustrial(loc.latitude,loc.longitude);
+  setLS('industrial','done');
+
+  setLS('geo','active');
+  await new Promise(r=>setTimeout(r,400));
+  setLS('geo','done');
+
+  setLS('report','active');
+  await new Promise(r=>setTimeout(r,300));
+
+  const raw={air:airData,climate:climateData,flood:floodData,crime:crimeData,water:waterData,fingertips:ftData,industrial:indData};
+  const points=computeScores(raw,loc);
+  const catScores=computeCategoryScores(points);
+  const overall=computeOverall(catScores);
+
+  setLS('report','done');
+  await new Promise(r=>setTimeout(r,250));
+
+  show('view-dashboard');
+  renderScoreStrip(userData,overall,catScores,loc);
+  renderCategoryCards(catScores);
+  renderDPTable(points);
+  setupFilterTabs(points);
+  renderCharts(catScores);
+  renderInterpretation(userData,points,overall,catScores);
+}
+
+// ══ EVENT LISTENERS ══════════════════════════════════════════════
+
+document.getElementById('btn-analyse').addEventListener('click',()=>{
+  const d=validateForm(); if(d) runAnalysis(d);
+});
+document.getElementById('inp-postcode').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase(); });
+['inp-name','inp-email','inp-postcode'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('btn-analyse').click(); });
+});
+document.getElementById('btn-restart').addEventListener('click',()=>{
+  show('view-form');
+  document.getElementById('dp-table').innerHTML='';
+  document.getElementById('cat-cards').innerHTML='';
+  document.getElementById('recs-grid').innerHTML='';
+  document.getElementById('score-meta').innerHTML='';
+  document.getElementById('gauge-fill').style.strokeDashoffset='364.42';
+  document.getElementById('gauge-number').textContent='—';
+});
+</script>
+</body>
+</html>

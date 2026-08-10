@@ -16,34 +16,30 @@ export interface EpcData {
 }
 
 // EPC lookup used as a fallback when we don't already have a cached EPC
-// record for the property (epc_cache). Requires a free account at
-// https://epc.opendatacommunities.org/ — set EPC_API_EMAIL / EPC_API_KEY.
-// Server-side only; never expose these credentials to the frontend.
+// record for the property (epc_cache). Requires a Bearer token from
+// https://get-energy-performance-data.communities.gov.uk/ — set EPC_API_TOKEN.
+// Server-side only; never expose this credential to the frontend.
 export async function lookupEpcFallback(postcode: string): Promise<LookupResult<EpcData[]>> {
-  const source = "EPC Register (epc.opendatacommunities.org)";
-  const email = process.env.EPC_API_EMAIL;
-  const key = process.env.EPC_API_KEY;
+  const source = "EPC Register (get-energy-performance-data.communities.gov.uk)";
+  const token = process.env.EPC_API_TOKEN;
 
-  if (!email || !key) {
+  if (!token) {
     return {
       status: "unavailable",
       data: null,
       source,
       checkedAt: now(),
-      error: "EPC_API_EMAIL / EPC_API_KEY not configured",
+      error: "EPC_API_TOKEN not configured",
     };
   }
 
   try {
-    const auth = Buffer.from(`${email}:${key}`).toString("base64");
-    const url = `https://epc.opendatacommunities.org/api/v1/domestic/search?postcode=${encodeURIComponent(postcode)}`;
-    const res = await fetchWithTimeout(url, {
-      headers: { Authorization: `Basic ${auth}`, Accept: "application/json" },
+    const url = new URL("https://api.get-energy-performance-data.communities.gov.uk/api/domestic/search");
+    url.searchParams.set("postcode", postcode);
+    const res = await fetchWithTimeout(url.toString(), {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     });
 
-    if (res.status === 404) {
-      return { status: "ok", data: [], source, checkedAt: now() };
-    }
     if (!res.ok) {
       return {
         status: "unavailable",
@@ -55,31 +51,35 @@ export async function lookupEpcFallback(postcode: string): Promise<LookupResult<
     }
 
     const json = (await res.json()) as any;
-    const rows: unknown[] = Array.isArray(json.rows) ? json.rows : [];
+    const rows: unknown[] = Array.isArray(json.data) ? json.data : [];
     return { status: "ok", data: rows.map(mapEpcRow), source, checkedAt: now() };
   } catch (err) {
     return { status: "error", data: null, source, checkedAt: now(), error: errorMessage(err) };
   }
 }
 
+// Field names below: uprn, postcode, addressLine1, currentEnergyEfficiencyBand
+// are confirmed against the new API's docs. The rest (wall/glazing/heating/
+// construction-age/SAP score) are carried over as camelCase guesses from the
+// old opendatacommunities field names and are NOT verified against a live
+// response — check these against real output before relying on them.
 function mapEpcRow(row: any): EpcData {
   return {
     uprn: row.uprn ?? null,
     postcode: row.postcode,
-    addressLine1: row.address1 ?? null,
-    wallType: row["walls-description"] ?? null,
-    wallInsulation: row["walls-energy-eff"] ?? null,
-    glazingType: row["windows-description"] ?? null,
-    heatingType: row["mainheat-description"] ?? null,
-    heatingFuel: row["main-fuel"] ?? null,
-    builtYear: parseConstructionAgeBand(row["construction-age-band"]),
-    sapScore:
-      row["current-energy-efficiency"] != null ? Number(row["current-energy-efficiency"]) : null,
-    epcBand: row["current-energy-rating"] ?? null,
+    addressLine1: row.addressLine1 ?? null,
+    wallType: row.wallsDescription ?? null,
+    wallInsulation: row.wallsEnergyEfficiency ?? null,
+    glazingType: row.windowsDescription ?? null,
+    heatingType: row.mainHeatDescription ?? null,
+    heatingFuel: row.mainFuel ?? null,
+    builtYear: parseConstructionAgeBand(row.constructionAgeBand),
+    sapScore: row.currentEnergyEfficiency != null ? Number(row.currentEnergyEfficiency) : null,
+    epcBand: row.currentEnergyEfficiencyBand ?? null,
   };
 }
 
-// EPC's "construction-age-band" is a free-text range like
+// EPC's "constructionAgeBand" is a free-text range like
 // "England and Wales: 1930-1949" — take the first year mentioned.
 function parseConstructionAgeBand(band: unknown): number | null {
   if (typeof band !== "string") return null;

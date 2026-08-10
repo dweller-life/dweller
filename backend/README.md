@@ -21,7 +21,7 @@ Set these in the Vercel project's Environment Variables settings — never commi
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | Safe to expose to the browser, but the backend also reads it. |
 | `SUPABASE_SECRET_KEY` | yes | Server-side only. Bypasses RLS. Never prefix with `NEXT_PUBLIC_`. |
-| `EPC_API_EMAIL` / `EPC_API_KEY` | no | EPC register fallback lookup. Without these, `epc` reports `status: "unavailable"` instead of failing the whole report. |
+| `EPC_API_TOKEN` | no | EPC register fallback lookup (Bearer token from get-energy-performance-data.communities.gov.uk). Without it, `epc` reports `status: "unavailable"` instead of failing the whole report. |
 | `AQMA_SERVICE_URL` | no | ArcGIS FeatureServer query endpoint for DEFRA/UK-AIR AQMA boundaries. Same graceful-degradation behavior if unset. |
 | `ALLOWED_ORIGIN` | no | CORS origin for `/api/report`. Defaults to `*`; set to the deployed frontend's origin once known. |
 

@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="./image-slot.js"></script>
+<style>
+:root{
+  --dw-terracotta:#C15230;--dw-amber:#D68B3A;--dw-cream:#F6F2EC;--dw-sand:#E7DDCF;--dw-ink:#1F1A17;--dw-warm-grey:#5C564F;
+  --dw-air:#F2A93C;--dw-light:#A6DB6A;--dw-water:#7BA3D6;--dw-noise:#C77DD3;--dw-track:#6E6E6E;
+  --dw-optimal:#3B9E4A;--dw-below:#C0392B;
+  --font-display:"Sora",system-ui,sans-serif;--font-mono:"JetBrains Mono",ui-monospace,monospace;
+  --radius-card:22px;--radius-pill:999px;--shadow-card:0 8px 30px rgba(31,26,23,0.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--dw-ink);font-family:var(--font-display);-webkit-font-smoothing:antialiased;color:var(--dw-ink);overscroll-behavior:none}
+a{color:#C15230;text-decoration:none}
+a:hover{color:#A94A2A}
+input,button{font-family:inherit}
+input:focus{outline:none}
+button{transition:filter .2s ease,background-color .2s ease,border-color .2s ease,color .2s ease}
+button:hover{filter:brightness(0.94)}
+button:active{filter:brightness(0.9)}
+.leaflet-control-attribution{font-size:9px !important;background:rgba(12,7,5,0.5) !important;color:rgba(250,246,240,0.5) !important}
+.leaflet-control-attribution a{color:rgba(250,246,240,0.6) !important}
+@keyframes dwFade{from{opacity:0}to{opacity:1}}
+@keyframes dwRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes dwRiseSlow{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes dwGrain{0%{transform:translate(0,0)}25%{transform:translate(-2%,1%)}50%{transform:translate(1.5%,-2%)}75%{transform:translate(-1%,-1.5%)}100%{transform:translate(0,0)}}
+@keyframes dwFlicker{0%,100%{opacity:.6;transform:scale(1)}35%{opacity:1;transform:scale(1.07)}70%{opacity:.72;transform:scale(.97)}}
+@keyframes dwSmoke{from{opacity:.45;transform:translateY(0) scaleX(1)}to{opacity:0;transform:translateY(-70px) scaleX(2.2)}}
+@keyframes dwGrow{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+@keyframes dwPush{from{opacity:0;transform:translateY(34px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes dwPulse{0%,100%{opacity:.3}50%{opacity:.9}}
+@keyframes dwBreathe{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.1);opacity:.85}}
+@keyframes dwFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes dwHint{0%,100%{opacity:.35}50%{opacity:.9}}
+@keyframes dwWinks{0%,100%{opacity:.85}50%{opacity:.35}}
+@keyframes dwMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes dwDrift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(5%,4%) scale(1.14)}}
+@keyframes dwDrift2{0%,100%{transform:translate(0,0) scale(1.06)}50%{transform:translate(-4%,-3%) scale(0.9)}}
+@keyframes dwDrift3{0%,100%{transform:translate(0,0) scale(0.94)}50%{transform:translate(-3%,5%) scale(1.12)}}
+.dw-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.dw-scan .b{position:absolute;border-radius:50%;filter:blur(80px);will-change:transform}
+.dw-scan .b1{width:64vw;height:64vw;left:-12vw;top:-18vw;background:radial-gradient(circle,rgba(214,139,58,0.20),rgba(214,139,58,0) 70%);animation:dwDrift1 34s ease-in-out infinite}
+.dw-scan .b2{width:58vw;height:58vw;right:-14vw;bottom:-16vw;background:radial-gradient(circle,rgba(193,82,48,0.13),rgba(193,82,48,0) 70%);animation:dwDrift2 44s ease-in-out infinite}
+.dw-scan .b3{width:46vw;height:46vw;left:36vw;top:26vh;background:radial-gradient(circle,rgba(242,169,60,0.11),rgba(242,169,60,0) 72%);animation:dwDrift3 52s ease-in-out infinite}
+@media (max-width:720px){.dw-nav-links{display:none !important}}
+@media (max-width:1080px){.dw-float{display:none !important}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#1F1A17;position:relative">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="position:relative;min-height:100vh;overflow:hidden;background:#8A4A1E">
+  <video src="uploads/Dweller%20Homepage.mp4" autoplay="autoplay" muted="muted" loop="loop" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,10,4,0.34) 0%,rgba(20,10,4,0.06) 34%,rgba(20,10,4,0.30) 100%)"></div>
+  <div style="position:absolute;inset:-6%;opacity:.16;background-image:radial-gradient(rgba(255,255,255,0.8) 0.5px,transparent 0.6px);background-size:3px 3px;animation:dwGrain 1.1s steps(4) infinite;pointer-events:none"></div>
+
+  <div style="position:relative;z-index:5;padding:clamp(14px,2vw,24px) clamp(14px,2.4vw,28px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,0.13);backdrop-filter:blur(10px);border-radius:999px;padding:10px 10px 10px clamp(18px,2.4vw,30px)">
+      <div style="font-size:clamp(20px,2.1vw,26px);font-weight:700;letter-spacing:-0.045em;color:#F6F2EC">dweller</div>
+      <div class="dw-nav-links" style="display:flex;gap:clamp(18px,3vw,42px);align-items:center">
+        <a href="#" style="font-size:15px;color:rgba(255,248,239,0.94);font-weight:400">Mission</a>
+        <a href="#" style="font-size:15px;color:rgba(255,248,239,0.94);font-weight:400">How it works</a>
+        <a href="#" style="font-size:15px;color:rgba(255,248,239,0.94);font-weight:400">Neighbourhood</a>
+      </div>
+      <button onClick="{{ openFlow }}" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#F6F2EC;background:#C15230;border:none;border-radius:999px;padding:14px clamp(18px,2.2vw,26px);cursor:pointer">GET YOUR TEST</button>
+    </div>
+  </div>
+
+  <div class="dw-float" style="position:absolute;left:clamp(14px,3vw,42px);top:clamp(150px,22vh,240px);z-index:4;display:flex;align-items:center;gap:10px;background:rgba(60,32,16,0.45);backdrop-filter:blur(6px);border-radius:999px;padding:11px 20px;animation:dwFloat 6s ease-in-out infinite">
+    <span style="width:8px;height:8px;border-radius:50%;background:#C15230"></span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#F6F2EC">MICROPLASTIC LEVEL</span>
+  </div>
+  <div class="dw-float" style="position:absolute;right:clamp(14px,3vw,42px);top:clamp(170px,25vh,262px);z-index:4;display:flex;align-items:center;gap:10px;background:rgba(60,32,16,0.45);backdrop-filter:blur(6px);border-radius:999px;padding:11px 20px;animation:dwFloat 7.5s ease-in-out infinite">
+    <span style="width:8px;height:8px;border-radius:50%;background:#3B9E4A"></span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#F6F2EC">AIR QUALITY</span>
+  </div>
+  <div class="dw-float" style="position:absolute;left:clamp(14px,3vw,42px);bottom:clamp(40px,10vh,100px);z-index:4;display:flex;align-items:center;gap:10px;background:rgba(60,32,16,0.45);backdrop-filter:blur(6px);border-radius:999px;padding:11px 20px;animation:dwFloat 8.5s ease-in-out infinite">
+    <span style="width:8px;height:8px;border-radius:50%;background:#C15230"></span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#F6F2EC">LEAD DETECTED</span>
+  </div>
+
+  <div style="position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(30px,6vh,70px) clamp(24px,12vw,130px) clamp(50px,10vh,110px);min-height:calc(100vh - 120px)">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.22em;color:#F0C173;margin-bottom:clamp(16px,2.4vh,26px);animation:dwFade 1s ease .1s both">THE DWELLER HOME HEALTH REPORT</div>
+    <h1 style="font-size:clamp(34px,5.8vw,80px);line-height:1.06;letter-spacing:-0.04em;font-weight:600;color:#F6F2EC;margin:0 0 clamp(18px,2.6vh,30px);animation:dwRiseSlow .9s cubic-bezier(0.16,1,0.3,1) both">Your home is where you<br /><span style="display:inline-block;color:#F0C173;opacity:{{ verbOpacity }};transform:translateY({{ verbY }});transition:opacity .3s ease,transform .3s ease">{{ verbWord }}</span>.<br />We check if it's healthy.</h1>
+    <p style="font-size:clamp(15px,1.5vw,20px);line-height:1.6;color:rgba(255,248,239,0.92);margin:0 0 clamp(26px,4vh,40px);max-width:52ch;text-wrap:pretty;animation:dwRiseSlow 1s cubic-bezier(0.16,1,0.3,1) .12s both">Our science team pulls together every public dataset that exists for your exact address, air, water, structure, sleep and environment, and reads it the way a building scientist would. You get one clear picture of your home, and the short list of changes that would make it healthier.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;max-width:540px;animation:dwRise 1s cubic-bezier(0.16,1,0.3,1) .22s both">
+      <input value="{{ postcode }}" onChange="{{ onPostcode }}" onKeyDown="{{ onPostcodeKey }}" placeholder="Enter your postcode" style="flex:1;min-width:220px;padding:18px 24px;font-size:17px;font-family:inherit;border:1px solid rgba(255,243,228,0.35);border-radius:999px;background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#F6F2EC;text-align:center;letter-spacing:0.06em;text-transform:uppercase" />
+      <button onClick="{{ beginReport }}" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#F6F2EC;background:#C15230;border:none;border-radius:999px;padding:18px 30px;cursor:pointer;box-shadow:0 10px 30px rgba(120,40,15,0.35);white-space:nowrap">BEGIN</button>
+    </div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:rgba(255,248,239,0.7);margin:clamp(18px,2.6vh,26px) 0 0;animation:dwFade 1.2s ease .34s both">CURRENTLY AVAILABLE TO ALL UK HOUSEHOLDS</p>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isQuestions }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 50% -10%,#FBE3BE 0%,#F6F2EC 58%,#F6F2EC 100%);display:flex;flex-direction:column">
+
+  <div class="dw-scan">
+    <div class="b b1"></div>
+    <div class="b b2"></div>
+    <div class="b b3"></div>
+  </div>
+
+  <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px clamp(18px,4vw,44px)">
+    <div style="font-size:22px;font-weight:700;letter-spacing:-0.045em;color:#1F1A17">dweller</div>
+    <div style="display:flex;gap:6px;flex:1;min-width:0;max-width:340px;justify-content:center">
+      <sc-for list="{{ qDots }}" as="d" hint-placeholder-count="6">
+        <div style="flex:1 1 0;min-width:0;max-width:32px;height:3px;border-radius:999px;background:{{ d.col }};transition:background .4s ease"></div>
+      </sc-for>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:#8A8078">{{ qCounter }}</div>
+  </div>
+
+  <div style="position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;padding:clamp(16px,4vh,40px) clamp(18px,5vw,56px)">
+    <div style="width:100%;max-width:820px;text-align:center">
+      <sc-if value="{{ stepQuestion }}" hint-placeholder-val="{{ true }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#C15230;margin-bottom:18px;animation:dwFade .5s ease both">{{ q.hint }}</div>
+        <h2 style="font-size:clamp(24px,3.4vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:600;margin:0 0 12px;color:#1F1A17;max-width:20ch;margin-left:auto;margin-right:auto;text-wrap:balance;animation:dwRise .55s cubic-bezier(0.16,1,0.3,1) both">{{ q.label }}</h2>
+        <p style="font-size:16px;line-height:1.5;color:#5C564F;margin:0 0 clamp(26px,4vh,44px);max-width:44ch;margin-left:auto;margin-right:auto;animation:dwFade .6s ease .1s both">{{ q.why }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;animation:dwRise .6s cubic-bezier(0.16,1,0.3,1) .08s both">
+          <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="4">
+            <button onClick="{{ o.pick }}" style="display:flex;flex-direction:column;align-items:center;gap:9px;min-width:clamp(104px,14vw,156px);flex:0 1 auto;padding:clamp(13px,1.9vw,20px) 18px;border-radius:18px;cursor:pointer;transition:background-color .2s ease,border-color .2s ease,color .2s ease;{{ o.css }}">
+              <span style="font-size:24px;line-height:1">{{ o.glyph }}</span>
+              <span style="font-size:15px;font-weight:500;letter-spacing:-0.01em">{{ o.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ stepGreeting }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#C15230;margin-bottom:18px;animation:dwFade .5s ease both">{{ greetingKicker }}</div>
+        <h2 style="font-size:clamp(24px,3.4vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:600;margin:0 0 12px;color:#1F1A17;max-width:20ch;margin-left:auto;margin-right:auto;text-wrap:balance;animation:dwRise .55s cubic-bezier(0.16,1,0.3,1) both">{{ greetingLabel }}</h2>
+        <p style="font-size:16px;line-height:1.55;color:#5C564F;margin:0 auto;max-width:46ch;animation:dwFade .6s ease .1s both">{{ greetingWhy }}</p>
+      </sc-if>
+
+      <sc-if value="{{ stepCharacters }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#C15230;margin-bottom:18px;animation:dwFade .5s ease both">WHO LIVES HERE · TAP ALL</div>
+        <h2 style="font-size:clamp(24px,3.4vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:600;margin:0 0 12px;color:#1F1A17;max-width:20ch;margin-left:auto;margin-right:auto;text-wrap:balance;animation:dwRise .55s cubic-bezier(0.16,1,0.3,1) both">Who lives here?</h2>
+        <p style="font-size:16px;line-height:1.5;color:#5C564F;margin:0 0 clamp(24px,4vh,36px);max-width:42ch;margin-left:auto;margin-right:auto;animation:dwFade .6s ease .1s both">Tap everyone who shares the home. We describe each finding in terms of the people, and pets, actually in it.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;animation:dwRise .6s cubic-bezier(0.16,1,0.3,1) .08s both">
+          <sc-for list="{{ characterTiles }}" as="t" hint-placeholder-count="4">
+            <button onClick="{{ t.toggle }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;width:clamp(96px,20vw,132px);padding:16px 12px 14px;border-radius:20px;cursor:pointer;transition:background-color .2s ease,border-color .2s ease,box-shadow .2s ease;{{ t.css }}">
+              <div style="height:58px;display:flex;align-items:flex-end;justify-content:center">
+                <sc-if value="{{ t.human }}" hint-placeholder-val="{{ true }}">
+                  <div style="position:relative;width:34px;height:48px;transform:scale({{ t.scale }});transform-origin:bottom center">
+                    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:{{ t.figColor }};transition:background .2s ease"></div>
+                    <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30px;height:26px;border-radius:16px 16px 9px 9px;background:{{ t.figColor }};transition:background .2s ease"></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ t.isPet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:relative;width:42px;height:42px;margin-bottom:6px">
+                    <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:24px;height:20px;border-radius:50%;background:{{ t.figColor }};transition:background .2s ease"></div>
+                    <div style="position:absolute;top:2px;left:3px;width:8px;height:12px;border-radius:50%;background:{{ t.figColor }}"></div>
+                    <div style="position:absolute;top:-1px;left:17px;width:8px;height:13px;border-radius:50%;background:{{ t.figColor }}"></div>
+                    <div style="position:absolute;top:2px;right:3px;width:8px;height:12px;border-radius:50%;background:{{ t.figColor }}"></div>
+                  </div>
+                </sc-if>
+              </div>
+              <span style="font-size:13.5px;font-weight:500;letter-spacing:-0.01em;color:{{ t.labelColor }};transition:color .2s ease">{{ t.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ stepConcern }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#C15230;margin-bottom:18px;animation:dwFade .5s ease both">YOUR QUESTION FIRST · PICK ANY</div>
+        <h2 style="font-size:clamp(24px,3.4vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:600;margin:0 0 12px;color:#1F1A17;max-width:22ch;margin-left:auto;margin-right:auto;text-wrap:balance;animation:dwRise .55s cubic-bezier(0.16,1,0.3,1) both">Does anything worry you about your home?</h2>
+        <p style="font-size:16px;line-height:1.5;color:#5C564F;margin:0 0 clamp(22px,4vh,32px);max-width:44ch;margin-left:auto;margin-right:auto;animation:dwFade .6s ease .1s both">Pick what's on your mind. We lead your report with it and answer it first.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;max-width:620px;margin:0 auto;text-align:left;animation:dwRise .6s cubic-bezier(0.16,1,0.3,1) .08s both">
+          <sc-for list="{{ concernCards }}" as="c" hint-placeholder-count="6">
+            <button onClick="{{ c.toggle }}" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 16px;border-radius:16px;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;{{ c.css }}">
+              <div style="min-width:0">
+                <div style="font-size:16px;font-weight:600;letter-spacing:-0.015em;color:{{ c.titleColor }};margin-bottom:3px;transition:color .2s ease">{{ c.label }}</div>
+                <div style="font-size:12px;line-height:1.4;color:{{ c.subColor }};transition:color .2s ease">{{ c.triggers }}</div>
+              </div>
+              <span style="width:12px;height:12px;border-radius:50%;background:{{ c.dotColor }};transition:background .2s ease"></span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ stepText }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#C15230;margin-bottom:18px;animation:dwFade .5s ease both">{{ textKicker }}</div>
+        <h2 style="font-size:clamp(24px,3.4vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:600;margin:0 0 12px;color:#1F1A17;max-width:20ch;margin-left:auto;margin-right:auto;text-wrap:balance;animation:dwRise .55s cubic-bezier(0.16,1,0.3,1) both">{{ textLabel }}</h2>
+        <p style="font-size:16px;line-height:1.5;color:#5C564F;margin:0 0 clamp(26px,4vh,40px);max-width:46ch;margin-left:auto;margin-right:auto;animation:dwFade .6s ease .1s both">{{ textWhy }}</p>
+        <div style="max-width:460px;margin:0 auto;animation:dwRise .6s cubic-bezier(0.16,1,0.3,1) .08s both">
+          <input value="{{ textValue }}" onChange="{{ onText }}" onKeyDown="{{ onTextKey }}" placeholder="{{ textPlaceholder }}" type="{{ textType }}" style="width:100%;padding:14px 20px;font-size:16px;font-family:inherit;border:1px solid #E7DDCF;border-radius:14px;background:#fff;color:#1F1A17;text-align:center" />
+          <sc-if value="{{ stepTc }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ toggleTc }}" style="display:flex;gap:11px;align-items:flex-start;margin-top:16px;cursor:pointer;text-align:left">
+              <span style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1.5px solid;{{ tcBoxCss }};display:flex;align-items:center;justify-content:center;transition:all .2s ease">
+                <span style="color:#fff;font-size:13px;line-height:1;opacity:{{ tcTick }};transition:opacity .2s ease">✓</span>
+              </span>
+              <span style="font-size:13px;line-height:1.45;color:#5C564F">I agree to dweller's <a href="#">terms</a> and to receiving my report by email.</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <div style="display:flex;gap:14px;justify-content:center;align-items:center;margin-top:clamp(24px,4vh,40px)">
+        <button onClick="{{ qBack }}" style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:#8A8078;background:none;border:1px solid #E7DDCF;border-radius:999px;padding:13px 20px;cursor:pointer">BACK</button>
+        <button onClick="{{ qNext }}" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#fff;background:#C15230;border:none;border-radius:999px;padding:15px 30px;cursor:pointer;opacity:{{ qNextOpacity }};transition:opacity .2s ease">{{ qNextLabel }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showStory }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;overflow:hidden;display:flex;flex-direction:column;background-color:{{ bgBase }};transition:background-color 1s cubic-bezier(0.4,0,0.2,1)">
+
+  <div style="position:absolute;inset:0;background:{{ bgBloom }};pointer-events:none"></div>
+  <div style="position:absolute;inset:-8%;opacity:{{ grainOn }};background-image:radial-gradient(rgba(255,255,255,0.75) 0.5px,transparent 0.6px);background-size:3px 3px;animation:dwGrain 1.1s steps(4) infinite;pointer-events:none;z-index:2"></div>
+
+  <div style="position:absolute;inset:0;z-index:3;pointer-events:none;opacity:{{ mapOpacity }};transition:opacity .7s ease">
+    <x-import component-from-global-scope="dweller-map" from="./dweller-map.js" lat="{{ mapLat }}" lng="{{ mapLng }}" label="{{ postcodeUpper }}" sub="{{ mapSub }}" hint-size="100%,100%"></x-import>
+  </div>
+
+  <div style="position:relative;flex:none;z-index:25;padding:16px clamp(16px,3.4vw,40px) 12px;pointer-events:none">
+    <div style="display:flex;gap:5px;margin-bottom:14px">
+      <sc-for list="{{ segments }}" as="s" hint-placeholder-count="10">
+        <div style="flex:{{ s.flex }};height:2px;border-radius:999px;background:{{ s.trackCol }};overflow:hidden">
+          <div style="height:100%;border-radius:999px;background:{{ s.fillCol }};width:{{ s.w }};transition:width .5s cubic-bezier(0.16,1,0.3,1)"></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;color:{{ ink }};transition:color .9s ease">
+      <div style="display:flex;align-items:baseline;gap:14px;min-width:0">
+        <span style="font-size:19px;font-weight:700;letter-spacing:-0.045em">dweller</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ addressShort }}</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;opacity:.55;white-space:nowrap">{{ chapterLabel }}</div>
+    </div>
+  </div>
+
+  <div style="position:relative;flex:1;min-height:0;z-index:10;display:flex;align-items:flex-start;justify-content:center;padding:clamp(14px,3vh,34px) clamp(16px,3.4vw,40px);overflow-y:auto;pointer-events:none">
+    <div style="width:100%;max-width:1180px;margin:auto;pointer-events:none">
+
+      <sc-if value="{{ isScore }}" hint-placeholder-val="{{ true }}">
+        <div style="width:100%;max-width:1040px;margin:0 auto;color:#1F1A17">
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:baseline;padding-bottom:12px;border-bottom:1px solid rgba(31,26,23,0.2);opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#C15230">FIG.01 · HOME HEALTH INDEX</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#8A8078;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60ch">{{ propertyLine }}</div>
+          </div>
+
+          <div style="padding:clamp(16px,3vh,28px) 0 clamp(16px,2.6vh,24px);opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">
+            <h2 style="font-size:clamp(24px,3.3vw,40px);line-height:1.08;letter-spacing:-0.03em;font-weight:500;margin:0 0 12px;color:#1F1A17;max-width:24ch;text-wrap:balance">{{ reportHeadline }}</h2>
+            <p style="font-size:clamp(15px,1.55vw,18px);line-height:1.55;color:#5C564F;margin:0;max-width:60ch;text-wrap:pretty">{{ reportSummary }}</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(24px,4vw,60px);align-items:center;padding-top:clamp(14px,2.4vh,24px);border-top:1px solid rgba(31,26,23,0.12)">
+
+            <div style="display:flex;flex-direction:column;align-items:center;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">
+              <div style="position:relative;width:min(62vw,40vh,264px);aspect-ratio:1">
+                <svg viewBox="0 0 240 240" style="width:100%;height:100%">
+                  <sc-for list="{{ ticks }}" as="t" hint-placeholder-count="44">
+                    <line x1="{{ t.x1 }}" y1="{{ t.y1 }}" x2="{{ t.x2 }}" y2="{{ t.y2 }}" stroke="{{ t.col }}" stroke-width="{{ t.wdt }}" stroke-linecap="round"></line>
+                  </sc-for>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <div style="display:flex;align-items:baseline;gap:3px">
+                    <div style="font-size:min(20vw,15vh,86px);line-height:.86;font-weight:600;letter-spacing:-0.05em;color:#1F1A17">{{ scoreDisplay }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8A8078">/100</div>
+                  </div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.22em;color:#C15230;margin-top:6px">INDEX</div>
+                </div>
+              </div>
+              <div style="margin-top:clamp(10px,2vh,18px);display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(31,26,23,0.16);border-radius:999px;padding:7px 15px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#C15230"></span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#1F1A17">{{ bandFull }}</span>
+              </div>
+            </div>
+
+            <div style="pointer-events:auto;position:relative;z-index:30">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid rgba(31,26,23,0.2);opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;color:#C15230">WHAT'S DRIVING IT</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#8A8078">TAP TO EXPLORE →</div>
+              </div>
+              <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.go }}" style="display:grid;grid-template-columns:22px 1fr auto;gap:clamp(10px,1.4vw,16px);align-items:center;width:100%;background:none;border:none;border-bottom:1px solid rgba(31,26,23,0.1);padding:13px 2px;cursor:pointer;text-align:left;opacity:{{ c.o }};transform:translateY({{ c.y }});transition:opacity .5s ease,transform .5s ease,background-color .2s ease" style-hover="background:rgba(31,26,23,0.03)">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.06em;color:{{ c.color }}">{{ c.num }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.015em;color:#1F1A17;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+                    <span style="height:5px;border-radius:999px;background:rgba(31,26,23,0.08);position:relative;display:block">
+                      <span style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:{{ c.color }};width:{{ c.w }};display:block;transition:width 1.4s cubic-bezier(0.16,1,0.3,1)"></span>
+                    </span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:8px;justify-content:flex-end">
+                    <span style="font-size:22px;font-weight:600;color:#1F1A17;letter-spacing:-0.03em;line-height:1">{{ c.score }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;color:{{ c.color }};width:52px;text-align:left">{{ c.band }}</span>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="margin-top:clamp(16px,2.6vh,26px);padding-top:clamp(14px,2vh,20px);border-top:1px solid rgba(31,26,23,0.12);opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">
+            <div style="display:flex;gap:3px;margin-bottom:8px">
+              <sc-for list="{{ bands }}" as="b" hint-placeholder-count="5">
+                <div style="flex:1;height:6px;border-radius:3px;background:{{ b.col }}"></div>
+              </sc-for>
+            </div>
+            <div style="position:relative;height:15px">
+              <div style="position:absolute;left:{{ bandMark }};transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:left 2s cubic-bezier(0.16,1,0.3,1)">
+                <div style="width:2px;height:8px;background:#1F1A17;border-radius:2px"></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#1F1A17;margin-top:2px">YOU</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:#8A8078;margin-top:6px">
+              <span>CRITICAL</span><span>CONCERN</span><span>GOOD</span><span>STRONG</span><span>EXCEPTIONAL</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:clamp(12px,2vh,18px);padding-top:12px;border-top:1px solid rgba(31,26,23,0.1);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.09em;color:#8A8078;opacity:{{ o4 }};transition:opacity .6s ease">
+              <span><span style="color:#1F1A17;font-size:12px">81</span> ACHIEVABLE WITH THE FIXES</span>
+              <span><span style="color:#3B9E4A;font-size:12px">+8</span> VS AREA AVERAGE</span>
+              <span><span style="color:#1F1A17;font-size:12px">14</span> PUBLIC SOURCES READ</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHeadline }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:800px;margin:0 auto">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#F0C173;margin-bottom:22px;opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">THE OVERALL PICTURE</div>
+          <h2 style="font-size:clamp(28px,5vw,58px);line-height:1.05;letter-spacing:-0.04em;font-weight:400;margin:0 0 clamp(22px,3vh,30px);color:#F6F2EC;text-wrap:balance;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .8s cubic-bezier(0.16,1,0.3,1)">A sound Victorian house on a road that undoes some of its work.</h2>
+          <p style="font-size:clamp(17px,2vw,21px);line-height:1.55;color:#8A8078;margin:0;max-width:58ch;text-wrap:pretty;opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">Clean ground and Hampstead Heath carry the score. What pulls it down is a solid-brick house that can't breathe, 25 metres from 11,000 vehicles a day, and most of the fix is timing, not spending.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCat }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(26px,4.5vw,72px);align-items:center">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:{{ cur.color }};margin-bottom:18px;opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">{{ cur.index }} · {{ cur.upper }}</div>
+            <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .8s cubic-bezier(0.16,1,0.3,1)">
+              <svg viewBox="0 0 240 240" style="width:min(30vw,26vh,180px);height:min(30vw,26vh,180px);transform:rotate(-90deg)">
+                <circle cx="120" cy="120" r="106" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"></circle>
+                <circle cx="120" cy="120" r="106" fill="none" stroke="{{ cur.color }}" stroke-width="6" stroke-linecap="round" stroke-dasharray="{{ cur.dash }}" style="transition:stroke-dasharray 1.8s cubic-bezier(0.16,1,0.3,1)"></circle>
+              </svg>
+              <div style="position:absolute;text-align:center">
+                <div style="font-size:min(7vw,11vh,72px);line-height:.85;font-weight:500;letter-spacing:-0.05em;color:#F6F2EC">{{ catScore }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:rgba(250,246,240,0.5);margin-top:12px">{{ cur.bandLabel }}</div>
+              </div>
+            </div>
+            <h2 style="font-size:min(5.2vw,9vh,58px);line-height:.98;letter-spacing:-0.04em;font-weight:400;margin:14px 0 10px;color:#F6F2EC;opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">{{ cur.name }}</h2>
+            <p style="font-size:min(1.75vw,2.9vh,19px);line-height:1.45;color:rgba(250,246,240,0.78);margin:0 0 16px;max-width:32ch;text-wrap:pretty;opacity:{{ o4 }};transform:translateY({{ y4 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">{{ cur.summary }}</p>
+            <div style="display:flex;gap:13px;align-items:flex-start;max-width:36ch;opacity:{{ o5 }};transform:translateY({{ y5 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">
+              <div style="width:38px;height:38px;border-radius:50%;background:{{ cur.color }};color:#1F1A17;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;letter-spacing:-0.02em;flex-shrink:0">{{ cur.sci.initials }}</div>
+              <div>
+                <div style="font-size:14px;font-weight:500;color:#F6F2EC">{{ cur.sci.name }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.1em;color:rgba(250,246,240,0.45);margin-top:3px">{{ cur.sci.role }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="pointer-events:auto;position:relative;z-index:30">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:rgba(250,246,240,0.4);margin-bottom:10px">TAP A FINDING TO HEAR FROM {{ cur.sci.first }}</div>
+            <sc-for list="{{ cur.metrics }}" as="m" hint-placeholder-count="6">
+              <div style="border-bottom:1px solid rgba(250,246,240,0.09);opacity:{{ m.o }};transform:translateY({{ m.y }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">
+                <button onClick="{{ m.toggle }}" style="width:100%;display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;background:none;border:none;padding:11px 2px;cursor:pointer;text-align:left">
+                  <span style="width:7px;height:7px;border-radius:50%;background:{{ m.tone }};display:block"></span>
+                  <span style="font-size:15px;font-weight:400;color:#F6F2EC;letter-spacing:-0.01em">{{ m.label }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:{{ m.tone }};white-space:nowrap">{{ m.value }}</span>
+                </button>
+                <div style="overflow:hidden;max-height:{{ m.maxH }};opacity:{{ m.openO }};transition:max-height .5s cubic-bezier(0.16,1,0.3,1),opacity .4s ease">
+                  <div style="padding:0 2px 16px 22px">
+                    <div style="position:relative;height:3px;background:rgba(250,246,240,0.12);border-radius:999px;margin-bottom:8px">
+                      <div style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:{{ m.tone }};width:{{ m.w }};transition:width 1s cubic-bezier(0.16,1,0.3,1)"></div>
+                      <sc-if value="{{ m.hasMark }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;top:-5px;bottom:-5px;width:1px;background:rgba(250,246,240,0.55);left:{{ m.markLeft }}"></div>
+                      </sc-if>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline;margin-bottom:12px">
+                      <div style="font-size:12.5px;line-height:1.45;color:rgba(250,246,240,0.44);max-width:48ch">{{ m.note }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.11em;color:rgba(250,246,240,0.42);white-space:nowrap">{{ m.markLabel }}</div>
+                    </div>
+                    <div style="border-left:2px solid {{ cur.color }};padding-left:14px">
+                      <p style="font-size:15px;line-height:1.55;color:rgba(250,246,240,0.92);margin:0 0 8px;max-width:46ch;text-wrap:pretty">{{ m.says }}</p>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.11em;color:rgba(250,246,240,0.42)">{{ cur.sci.tag }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+              <sc-for list="{{ cur.actions }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;gap:9px;align-items:center;background:rgba(250,246,240,0.06);border:1px solid rgba(250,246,240,0.13);border-radius:999px;padding:9px 14px 9px 9px;opacity:{{ a.o }};transition:opacity .6s ease">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#1F1A17;background:{{ cur.color }};padding:4px 8px;border-radius:999px">{{ a.cost }}</span>
+                  <span style="font-size:13px;color:rgba(250,246,240,0.86)">{{ a.short }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFive }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:1080px;margin:0 auto">
+          <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-end;margin-bottom:clamp(18px,2.6vh,26px)">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:#8A4A1E;margin-bottom:12px;opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">YOUR ACTION AREAS</div>
+              <h2 style="font-size:clamp(26px,3.6vw,44px);line-height:1.02;letter-spacing:-0.04em;font-weight:400;margin:0;color:#1F1A17;max-width:18ch;text-wrap:balance;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">Everything you just read, reduced to five decisions.</h2>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#1F1A17;background:rgba(31,26,23,0.09);border-radius:999px;padding:12px 18px;opacity:{{ o2 }};transition:opacity .7s ease">62 → 76</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ fiveThings }}" as="t" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:auto 1fr auto;gap:clamp(12px,2.2vw,24px);align-items:center;background:rgba(31,26,23,0.06);border-radius:16px;padding:clamp(12px,1.7vw,17px) clamp(14px,2.2vw,22px);opacity:{{ t.o }};transform:translateY({{ t.y }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">
+                <div style="font-size:clamp(22px,2.8vw,32px);font-weight:500;letter-spacing:-0.05em;color:#C15230;line-height:1;min-width:24px">{{ t.n }}</div>
+                <div style="min-width:0">
+                  <div style="font-size:clamp(14px,1.6vw,17px);font-weight:400;line-height:1.34;letter-spacing:-0.012em;margin-bottom:4px;color:#1F1A17;text-wrap:pretty">{{ t.text }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.1em;color:#8A8078">{{ t.meta }}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:clamp(15px,1.9vw,20px);font-weight:500;color:#1F1A17;letter-spacing:-0.02em">{{ t.impact }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8078;margin-top:2px">{{ t.cost }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:16px;font-size:14px;line-height:1.5;color:#5C564F;max-width:64ch;opacity:{{ o8 }};transition:opacity .7s ease">The last five points are structural, wall insulation and ventilation design, and need someone to survey the building before anyone quotes you a number.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isTests }}" hint-placeholder-val="{{ false }}">
+        <div style="width:100%;max-width:900px;margin:0 auto;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#F0C173;margin-bottom:18px;opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">DIVING DEEPER</div>
+          <h2 style="font-size:clamp(28px,4vw,48px);line-height:1.04;letter-spacing:-0.035em;font-weight:500;margin:0 0 16px;color:#F6F2EC;max-width:18ch;margin-left:auto;margin-right:auto;text-wrap:balance;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .8s cubic-bezier(0.16,1,0.3,1)">A word from the founders.</h2>
+          <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:rgba(246,242,236,0.66);margin:0 auto;max-width:52ch;text-wrap:pretty;opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">This report reads your home from the outside. To see exactly what is in your air, water and dust, the next step is a lab test at home. Here is why we built it.</p>
+          <div onClick="{{ noop }}" style="position:relative;aspect-ratio:16/9;max-width:720px;margin:clamp(24px,4vh,40px) auto 0;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#2A231E,#17130F);border:1px solid rgba(246,242,236,0.12);cursor:pointer;pointer-events:auto;z-index:30;opacity:{{ o4 }};transform:translateY({{ y4 }});transition:all .8s cubic-bezier(0.16,1,0.3,1)">
+            <div style="position:absolute;inset:0;background:radial-gradient(70% 70% at 50% 45%,rgba(193,82,48,0.14),rgba(23,19,15,0) 70%)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+              <div style="width:clamp(56px,9vw,74px);height:clamp(56px,9vw,74px);border-radius:50%;background:#C15230;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(193,82,48,0.45)">
+                <div style="width:0;height:0;border-left:19px solid #fff;border-top:12px solid transparent;border-bottom:12px solid transparent;margin-left:5px"></div>
+              </div>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:linear-gradient(0deg,rgba(23,19,15,0.72),transparent)">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F6F2EC">JAMES & TOM · FOUNDERS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:rgba(246,242,236,0.6)">02:14</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProducts }}" hint-placeholder-val="{{ false }}">
+        <div style="width:100%;max-width:1000px;margin:0 auto">
+          <div style="text-align:center;max-width:600px;margin:0 auto">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#C15230;margin-bottom:18px;opacity:{{ o1 }};transform:translateY({{ y1 }});transition:all .6s cubic-bezier(0.16,1,0.3,1)">THE IN-HOME DWELLER TEST</div>
+            <h2 style="font-size:clamp(28px,4vw,48px);line-height:1.04;letter-spacing:-0.035em;font-weight:500;margin:0 0 16px;color:#1F1A17;max-width:18ch;margin-left:auto;margin-right:auto;text-wrap:balance;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">The full picture, measured inside your home.</h2>
+            <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:#5C564F;margin:0 auto;max-width:54ch;text-wrap:pretty;opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">Public data shows the conditions your home sits in. A dweller test shows what is actually in it: the air you breathe, the water you drink, the dust you live with.</p>
+          </div>
+
+          <div style="position:relative;margin:clamp(22px,3.6vh,36px) 0;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);opacity:{{ o4 }};transition:opacity .7s ease">
+            <div style="display:flex;width:max-content;animation:dwMarquee 42s linear infinite">
+              <sc-for list="{{ markers }}" as="m" hint-placeholder-count="24">
+                <span style="flex-shrink:0;margin-right:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.05em;color:#5C564F;background:#FFFFFF;border:1px solid #E7DDCF;border-radius:999px;padding:9px 16px;white-space:nowrap">{{ m }}</span>
+              </sc-for>
+              <sc-for list="{{ markersDup }}" as="m" hint-placeholder-count="24">
+                <span style="flex-shrink:0;margin-right:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.05em;color:#5C564F;background:#FFFFFF;border:1px solid #E7DDCF;border-radius:999px;padding:9px 16px;white-space:nowrap">{{ m }}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="max-width:440px;margin:0 auto;text-align:center;pointer-events:auto;position:relative;z-index:30;opacity:{{ o5 }};transform:translateY({{ y5 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">
+            <div style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(193,82,48,0.25);border-radius:999px;padding:7px 14px;margin-bottom:16px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#C15230"></span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#C15230">PRE-LAUNCH · OVERSUBSCRIBED</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <input value="{{ email }}" onChange="{{ onEmail }}" placeholder="{{ emailPlaceholder }}" style="padding:15px 20px;font-size:16px;font-family:inherit;border:1px solid #E7DDCF;border-radius:14px;background:#fff;color:#1F1A17;text-align:center" />
+              <button onClick="{{ joinWaitlist }}" style="padding:15px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.12em;color:#fff;background:#C15230;border:none;border-radius:14px;cursor:pointer">{{ waitlistLabel }}</button>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.1em;color:#8A8078;margin-top:12px">{{ waitlistNote }}</div>
+          </div>
+        </div>
+      </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isHood }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;max-width:760px;margin:0 auto;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:0.24em;color:#F6F2EC;margin-bottom:clamp(18px,3vh,30px);opacity:{{ o1 }};transition:opacity .6s ease">OUR COMMUNITY</div>
+          <h2 style="font-size:clamp(34px,5.4vw,64px);line-height:1.06;letter-spacing:-0.035em;font-weight:400;margin:0 0 clamp(20px,3.4vh,32px);color:#F6F2EC;text-wrap:balance;opacity:{{ o2 }};transform:translateY({{ y2 }});transition:all .8s cubic-bezier(0.16,1,0.3,1)">Join our Neighbourhood of healthy homes</h2>
+          <p style="font-size:clamp(16px,1.8vw,20px);line-height:1.5;color:#F6F2EC;margin:0 auto clamp(24px,4vh,40px);max-width:34ch;opacity:{{ o3 }};transform:translateY({{ y3 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">A problem shared is a problem halved. Join our neighbourhood of homes asking our experts questions to improve their lives.</p>
+          <div style="max-width:380px;margin:0 auto;display:flex;flex-direction:column;gap:12px;pointer-events:auto;position:relative;z-index:30;opacity:{{ o4 }};transform:translateY({{ y4 }});transition:all .7s cubic-bezier(0.16,1,0.3,1)">
+            <input value="{{ email }}" onChange="{{ onEmail }}" placeholder="name@email.com" style="padding:18px 24px;font-size:17px;border:none;border-radius:14px;background:#E7DDCF;color:#1F1A17" />
+            <button onClick="{{ noop }}" style="padding:18px 24px;font-size:17px;border:none;border-radius:14px;background:#1F1A17;color:#F6F2EC;cursor:pointer">Subscribe</button>
+          </div>
+          <div style="font-size:clamp(15px,1.7vw,19px);color:#F6F2EC;margin-top:clamp(26px,4.6vh,46px);opacity:{{ o5 }};transition:opacity .7s ease">Transforming thousands of homes</div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ isHood }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:22;pointer-events:none">
+      <sc-for list="{{ windows }}" as="w" hint-placeholder-count="8">
+        <div style="position:absolute;left:{{ w.x }};top:{{ w.y }};width:{{ w.size }};height:{{ w.h }};box-shadow:0 0 40px rgba(255,196,110,0.28),0 0 110px rgba(255,170,70,0.14);animation:dwWinks {{ w.dur }} ease-in-out infinite;pointer-events:auto">
+          <image-slot id="{{ w.id }}" shape="rect" placeholder="Lit flat" style="width:100%;height:100%"></image-slot>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div onClick="{{ prev }}" style="position:absolute;left:0;top:0;bottom:0;width:26%;z-index:20;cursor:w-resize"></div>
+  <div onClick="{{ next }}" style="position:absolute;right:0;top:0;bottom:0;width:74%;z-index:20;cursor:e-resize"></div>
+
+  <div style="position:relative;flex:none;z-index:26;padding:12px clamp(16px,3.4vw,40px) clamp(14px,2.2vw,22px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;pointer-events:none;color:{{ ink }};transition:color .9s ease">
+    <div style="display:flex;gap:7px;flex-wrap:wrap;min-width:0;pointer-events:auto">
+      <sc-for list="{{ chapterDots }}" as="d" hint-placeholder-count="10">
+        <button onClick="{{ d.go }}" style="width:9px;height:9px;border-radius:50%;border:none;cursor:pointer;padding:0;background:{{ d.col }};transition:all .4s ease;transform:scale({{ d.scale }})"></button>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-left:auto;pointer-events:auto">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.13em;opacity:{{ hintOn }};animation:dwHint 2.4s ease-in-out infinite;transition:opacity .5s ease">CLICK OR PRESS →</div>
+      <button onClick="{{ prev }}" style="width:38px;height:38px;border-radius:50%;border:1px solid currentColor;background:none;color:inherit;opacity:.5;cursor:pointer;font-size:15px;line-height:1">←</button>
+      <button onClick="{{ next }}" style="width:38px;height:38px;border-radius:50%;border:1px solid currentColor;background:none;color:inherit;opacity:.85;cursor:pointer;font-size:15px;line-height:1">→</button>
+      <button onClick="{{ restart }}" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:inherit;opacity:.5;background:none;border:1px solid currentColor;border-radius:999px;padding:10px 15px;cursor:pointer">EXIT</button>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ showThreshold }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:100;pointer-events:none">
+
+  <div style="position:absolute;inset:0;display:flex">
+    <div style="flex:1;background:#1F1A17;transform:translateX({{ doorL }});transition:transform 1.5s cubic-bezier(0.7,0,0.2,1);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 50%,rgba(240,193,115,0.16) 0%,rgba(12,7,5,0) 60%)"></div>
+      <div style="position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(240,193,115,0),rgba(240,193,115,0.55),rgba(240,193,115,0))"></div>
+    </div>
+    <div style="flex:1;background:#1F1A17;transform:translateX({{ doorR }});transition:transform 1.5s cubic-bezier(0.7,0,0.2,1);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 0% 50%,rgba(240,193,115,0.16) 0%,rgba(12,7,5,0) 60%)"></div>
+      <div style="position:absolute;top:0;left:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(240,193,115,0),rgba(240,193,115,0.55),rgba(240,193,115,0))"></div>
+    </div>
+  </div>
+
+  <div style="position:absolute;inset:0;opacity:{{ stageOpacity }};transition:opacity .5s ease">
+    <div style="position:absolute;inset:-10%;opacity:.13;background-image:radial-gradient(rgba(255,255,255,0.7) 0.5px,transparent 0.6px);background-size:3px 3px;animation:dwGrain 1.1s steps(4) infinite;z-index:9"></div>
+
+    <sc-if value="{{ beatMontage }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;overflow:hidden;animation:dwFade .6s ease both">
+        <video src="uploads/Dweller%20Home%20Montage.mp4" autoplay="autoplay" muted="muted" playsInline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(31,26,23,0.45) 0%,rgba(31,26,23,0.04) 24%,rgba(31,26,23,0.04) 48%,rgba(31,26,23,0.82) 100%)"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(135% 95% at 50% 42%,rgba(31,26,23,0) 48%,rgba(31,26,23,0.58) 100%)"></div>
+      </div>
+    </sc-if>
+
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 24px;z-index:12">
+      <sc-if value="{{ beatLogo }}" hint-placeholder-val="{{ true }}">
+        <div style="text-align:center;animation:dwFade .9s ease both">
+          <div style="font-size:clamp(38px,6.4vw,72px);font-weight:700;letter-spacing:-0.055em;color:#F6F2EC;margin-bottom:26px">dweller</div>
+          <div style="font-size:clamp(22px,3.6vw,40px);font-weight:400;letter-spacing:-0.035em;color:rgba(250,246,240,0.86);line-height:1.1;text-wrap:balance">Home is where your health is.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ beatMontage }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:0;right:0;bottom:clamp(60px,12vh,110px);text-align:center;padding:0 24px">
+          <sc-if value="{{ montageLine0 }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:clamp(18px,2.6vw,30px);font-weight:400;letter-spacing:-0.025em;color:#F6F2EC;line-height:1.25;max-width:26ch;margin:0 auto;text-wrap:balance;animation:dwRise .8s cubic-bezier(0.16,1,0.3,1) both">Humans have been building homes for 50,000 years.</div>
+          </sc-if>
+          <sc-if value="{{ montageLine1 }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:clamp(20px,2.9vw,34px);font-weight:500;letter-spacing:-0.028em;color:#F0C173;line-height:1.2;max-width:24ch;margin:0 auto;text-wrap:balance;animation:dwRise .7s cubic-bezier(0.16,1,0.3,1) both">Finally, it's time we perfect them.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ beatFinal }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;max-width:30ch;animation:dwRiseSlow .9s cubic-bezier(0.16,1,0.3,1) both">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:rgba(250,246,240,0.55);margin-bottom:18px">FINALISING YOUR REPORT</div>
+          <div style="font-size:clamp(54px,10vw,104px);line-height:.9;font-weight:600;letter-spacing:-0.05em;color:#F0C173">{{ dataCountDisplay }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.16em;color:rgba(250,246,240,0.55);margin:14px 0 22px">DATA POINTS ANALYSED</div>
+          <div style="font-size:clamp(17px,2.3vw,26px);font-weight:400;letter-spacing:-0.025em;color:#F6F2EC;line-height:1.3;text-wrap:balance">Quicker than a kettle boiling, our team have read every dataset there is on your home.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ beatWelcome }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;max-width:24ch;animation:dwRiseSlow 1s cubic-bezier(0.16,1,0.3,1) both">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#F0C173;margin-bottom:20px">YOUR REPORT IS READY</div>
+          <div style="font-size:clamp(30px,5.2vw,58px);font-weight:500;letter-spacing:-0.04em;color:#F6F2EC;line-height:1.06;text-wrap:balance;margin-bottom:16px">{{ welcomeLine }}</div>
+          <div style="font-size:clamp(16px,2vw,21px);font-weight:400;letter-spacing:-0.02em;color:rgba(250,246,240,0.78);line-height:1.3">Let's walk through this together.</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820}}">
+class Component extends DCLogic {
+  state = {
+    stage: 'home', flow: null, postcode: '', address: null, first_name: '', email: '', tcAgree: false,
+    mapLat: 51.5545, mapLng: -0.1585, mapPlace: '', road: '', town: '',
+    verbIndex: 0, verbShow: 1,
+    qi: 0, answers: { motivation: [], composition: [], concern: [], existing_measures: [], tenure: null },
+    beat: 0, montage: -1, montageLine: 0, dataCount: 0, doorOpen: false, stageOn: true,
+    b: 0, rv: 0, heroScore: 0, catScore: 0, catRing: 0, bars: false, open: 0, joined: false
+  };
+
+  VERBS = ['eat', 'sleep', 'work', 'rest', 'drink', 'cook', 'scroll', 'laugh', 'host', 'share', 'shower', 'grow', 'love', 'belong', 'live'];
+
+  CHARACTERS = [
+    { key: 'adults', label: 'Adult Humans', scale: 1, isPet: false },
+    { key: 'little', label: 'Little Humans', scale: 0.8, isPet: false },
+    { key: 'baby', label: 'Baby Humans', scale: 0.62, isPet: false },
+    { key: 'pets', label: 'Pets', scale: 1, isPet: true }
+  ];
+
+  CONCERNS = [
+    { key: 'air', label: 'Air', triggers: 'Traffic pollution · Dust & allergens · Mould spores' },
+    { key: 'water', label: 'Water', triggers: 'Lead · Microplastics · Limescale' },
+    { key: 'structure', label: 'Materials & structure', triggers: 'Damp & mould · Asbestos · Cold & draughts' },
+    { key: 'noise', label: 'Noise & light', triggers: 'Traffic noise · Light pollution · Overheating' },
+    { key: 'chemicals', label: 'Chemicals', triggers: "PFAS 'forever chemicals' · Flame retardants · Off-gassing" },
+    { key: 'unsure', label: 'Not sure', triggers: 'Check everything for me' }
+  ];
+
+  MARKERS = ['PM2.5', 'VOCs', 'Formaldehyde', 'NO₂', 'Mould spores', 'Lead', 'Copper', 'PFAS', 'Nitrate', 'Hardness', 'Microplastics', 'Heavy metals', 'Phthalates', 'Flame retardants', 'Radon', 'Humidity', 'Temperature', 'Noise', 'Damp risk', 'Asbestos', 'EPC rating', 'Flood risk', 'Light pollution', 'Storm overflows'];
+
+  ADDRESSES = [
+    '61a Fleet Road, London NW3 2QU',
+    'Flat 2, 27 Belsize Park Gardens, London NW3 4JG',
+    '14 Willoughby Road, London NW3 1RT',
+    '8 Downshire Hill, London NW3 1NR',
+    'Flat 4, 112 Fleet Road, London NW3 2QX'
+  ];
+
+  QUESTIONS = [
+    { key: 'motivation', label: 'Did anything bring you to dweller we can help focus on today?', hint: 'YOUR FOCUS · PICK ANY', why: 'This becomes the frame for the whole report, we lead with what matters to you.', multi: true,
+      options: [['Optimising my health & longevity', '◎'], ['Peace of mind from nasties', '✦'], ["I'm just moving in (or looking to move)", '⌂'], ['Expecting a little one', '✿'], ["I'm not sleeping well", '☾'], ['Something else I want to share', '⋯']] },
+    { key: 'tenure', label: 'And do you rent or own?', hint: 'WHAT YOU CAN CHANGE', why: 'We only suggest things you are allowed to do, renters get landlord-request framing.',
+      options: [['Rent', '⌂'], ['Own', '⌂'], ['Other', '·']] },
+    { key: 'existing_measures', label: 'And have you already done anything?', hint: 'WHAT YOU HAVE', why: 'So we never recommend something you already own.', multi: true,
+      options: [['Water Filter', '▽'], ['Air Purifier', '❋'], ['Dehumidifier', '◍'], ['Monitor', '◉'], ['None', ', ']] }
+  ];
+
+  STEPS = [
+    { kind: 'text', field: 'first_name', kicker: 'HELLO', label: "Hi neighbour, it's great to say hello.", why: 'To help our team get started, it would be great to properly meet you.', placeholder: 'Your first name', type: 'text' },
+    { kind: 'q', key: 'motivation' },
+    { kind: 'q', key: 'tenure' },
+    { kind: 'greeting', kicker: 'A LITTLE CONTEXT', label: "Well, it's great to meet you, {name}.", why: 'If you can give us a little more context, we can make sure our team give you the best possible advice.' },
+    { kind: 'characters', key: 'composition' },
+    { kind: 'concern', key: 'concern' },
+    { kind: 'q', key: 'existing_measures' },
+    { kind: 'text', field: 'email', tc: true, kicker: 'YOUR REPORT', label: '{name}, thanks, this is great.', why: "Here's what happens now: we run all of this against our huge, unique dataset and build your analysis. You'll be able to review it straight away, and we'll send a copy to keep.", placeholder: 'name@email.com', type: 'email' }
+  ];
+
+  CATS = [
+    {
+      key: 'water', name: 'Water', score: 58, color: '#7BA3D6', bandLabel: 'GOOD',
+      base: '#08121C', bloom: 'radial-gradient(90% 70% at 22% 30%,rgba(123,163,214,0.20) 0%,rgba(8,18,28,0) 62%),radial-gradient(70% 60% at 88% 82%,rgba(123,163,214,0.10) 0%,rgba(8,18,28,0) 60%)',
+      summary: 'Compliant at the works, very hard at the tap, and delivered through pipework old enough that nobody has recorded what it is made of.',
+      sources: ['DWI COMPLIANCE RETURNS', 'THAMES WATER ZONAL DATA', 'OS BUILDING AGE'],
+      meansLead: 'Your water leaves the treatment works clean and arrives at your boundary clean. What happens in the last few metres is unknown.',
+      actionTitle: 'Flush it, test it, filter it.',
+      meansRest: 'Very hard water builds a scale layer that usually protects against leaching, until pipework is disturbed by works next door or in the street. Hardness itself is not a health risk; it is a boiler, kettle and skin-comfort issue, and it means softening claims aimed at you will be aggressive.',
+      science: 'There is no threshold below which lead in drinking water is considered safe; standing water in older service pipes shows concentrations several times higher than fully flushed water.',
+      scienceRef: 'WHO GUIDELINES FOR DRINKING-WATER QUALITY, 4TH ED.',
+      metrics: [
+        { label: 'Hardness', value: '278 mg/l CaCO₃', note: 'Thames Water supply zone TWZ-NL4.', status: 'warn', pct: 82, mark: 59, markLabel: 'ENGLAND AVG 200' },
+        { label: 'Lead pipework likelihood', value: 'High', note: 'Built c.1893. No record of the communication pipe being replaced.', status: 'risk', pct: 86 },
+        { label: 'Nitrate', value: '21 mg/l', note: 'Stable across the last eight quarterly returns.', status: 'ok', pct: 42, mark: 100, markLabel: 'LIMIT 50' },
+        { label: 'Trihalomethanes', value: '42 µg/l', note: 'Chlorination by-products.', status: 'ok', pct: 42, mark: 100, markLabel: 'LIMIT 100' },
+        { label: 'PFAS', value: 'Not reported', note: 'This zone is not on the published monitoring list. Absence of data, not absence of PFAS.', status: 'unknown', pct: 0 },
+        { label: 'Compliance rate', value: '99.96%', note: 'Thames Water, 2025 zonal returns.', status: 'ok', pct: 99 }
+      ],
+      actions: [
+        { cost: 'FREE', text: 'Run the kitchen tap for 30 seconds before the first glass of the day, and after any period the house has been empty.' },
+        { cost: 'FREE', text: 'Ask Thames Water for a free lead test at the tap. They are obliged to provide one, and it converts this "likely" into a fact.' },
+        { cost: '£95', text: 'Fit a filter certified to NSF/ANSI 53 for lead. Jug filters are not equivalent, most are certified for taste only.' }
+      ],
+      products: [
+        { name: 'Undersink lead filter', note: 'NSF/ANSI 53 certified. Lab-verified at 0.3 µg/l output on hard water.', price: '£95', tag: 'FITS IN 30 MIN' },
+        { name: 'Shower scale filter', note: 'Cuts scale carry-over. Tested for zero resin leaching at 278 mg/l.', price: '£42', tag: 'SKIN & HAIR' }
+      ]
+    },
+    {
+      key: 'air', name: 'Air & Environment', score: 60, color: '#F2A93C', bandLabel: 'GOOD',
+      base: '#180B05', bloom: 'radial-gradient(90% 70% at 78% 26%,rgba(242,169,60,0.22) 0%,rgba(24,11,5,0) 62%),radial-gradient(70% 60% at 12% 84%,rgba(242,169,60,0.10) 0%,rgba(24,11,5,0) 60%)',
+      summary: 'Two things at once, a house that sits close to the road and cannot vent well, on ground that is otherwise as clean and green as inner London gets.',
+      sources: ['DEFRA UK-AIR', 'LONDON AIR LAQN', 'CAMDEN AQMA', 'UKHSA RADON'],
+      meansLead: 'Two adults spending ten hours a day here take most of their annual particulate exposure inside this building, not outside it.',
+      actionTitle: 'Change when you open the windows, not whether.',
+      meansRest: 'Roadside NO₂ peaks between 07:30 and 09:30, and again from 16:30 to 19:00, precisely the hours most people open windows. The house has no designed ventilation path at all, which is what makes the Structure score behave the way it does. Air and moisture are the same problem seen from two directions.',
+      science: 'There is no safe threshold for PM2.5; the guideline annual mean was lowered to 5 µg/m³ in 2021, and short-term roadside peaks scale directly with distance from the kerb.',
+      scienceRef: 'WHO GLOBAL AIR QUALITY GUIDELINES, 2021',
+      metrics: [
+        { label: 'PM2.5, annual mean', value: '9.4 µg/m³', note: 'Camden LAQN site, 600 m. UK legal limit 20.', status: 'risk', pct: 47, mark: 25, markLabel: 'WHO 5' },
+        { label: 'NO₂, annual mean', value: '31 µg/m³', note: 'Roadside diffusion tube, Fleet Road. UK limit 40.', status: 'warn', pct: 78, mark: 25, markLabel: 'WHO 10' },
+        { label: 'Road proximity', value: '25 m', note: 'Fleet Road, approximately 11,000 vehicles per day. Front elevation faces it.', status: 'warn', pct: 85 },
+        { label: 'Air Quality Management Area', value: 'Declared', note: 'Whole of Camden, for NO₂ and PM10, since 2002.', status: 'warn', pct: 70 },
+        { label: 'Radon', value: 'Below 1%', note: 'Lowest UKHSA band. No action level exceedance expected.', status: 'ok', pct: 8 },
+        { label: 'Mechanical ventilation', value: 'None recorded', note: 'EPC lists natural ventilation only. Sash windows, no trickle vents.', status: 'warn', pct: 90 },
+        { label: 'Flood risk', value: 'Very low', note: 'Environment Agency Flood Zone 1, below 0.1% annual probability.', status: 'ok', pct: 6 },
+        { label: 'Accessible green space within 300 m', value: '12.4 ha', note: 'Top 5% nationally. Hampstead Heath at the end of the road.', status: 'ok', pct: 95 },
+        { label: 'Storm overflow, nearest catchment', value: '41 spills', note: '2025 event duration monitoring, Hampstead Heath ponds.', status: 'warn', pct: 64 }
+      ],
+      actions: [
+        { cost: 'FREE', text: 'Ventilate from the rear of the house, toward the Heath. Same air change, materially less traffic pollution.' },
+        { cost: 'FREE', text: 'Open up between 10:00 and 16:00, and keep front windows shut through both rush hours.' },
+        { cost: '£40', text: 'Vent the cooker hood outside or fit a carbon insert. Gas cooking is the largest indoor NO₂ source in most London homes.' }
+      ],
+      products: [
+        { name: 'HEPA 13 room unit', note: 'Chamber-tested at 4.6 air changes/hr in a 22 m² room. No ozone output.', price: '£249', tag: 'FRONT ROOM' },
+        { name: 'Sash trickle vent kit', note: 'Filtered background ventilation without opening to the road.', price: '£78', tag: 'LANDLORD SAFE' }
+      ]
+    },
+    {
+      key: 'structure', name: 'Materials & Structure', score: 61, color: '#D68B3A', bandLabel: 'GOOD',
+      base: '#17100A', bloom: 'radial-gradient(90% 70% at 26% 74%,rgba(214,139,58,0.20) 0%,rgba(23,16,10,0) 62%),radial-gradient(70% 60% at 84% 20%,rgba(214,139,58,0.10) 0%,rgba(23,16,10,0) 60%)',
+      summary: 'Solid Victorian construction, well built and thermally poor. The risk is moisture, and it is a design consequence rather than a defect.',
+      sources: ['EPC REGISTER', 'HM LAND REGISTRY', 'OS BUILDING AGE'],
+      meansLead: 'Nothing here says the building is failing. It says the building was designed to leak air, and has since been sealed without anyone adding a replacement ventilation path.',
+      actionTitle: 'Give the moisture somewhere to go.',
+      meansRest: 'Two adults produce several litres of water vapour a day. In a house with cold solid walls and nowhere for that vapour to go, it condenses on the coldest surface it can find, usually behind furniture on an external wall, or at the rear addition junction. Mould follows moisture; it does not arrive on its own.',
+      science: 'Mould germination on typical internal finishes requires sustained surface relative humidity above roughly 80%, which in a room at 20 °C corresponds to about 65% ambient RH against a cold wall.',
+      scienceRef: 'BS 5250:2021, MANAGEMENT OF MOISTURE IN BUILDINGS',
+      metrics: [
+        { label: 'Construction', value: 'Solid brick, 215 mm', note: 'c.1893, no cavity, uninsulated. Typical for the terrace.', status: 'warn', pct: 70 },
+        { label: 'Condensation and damp risk', value: 'High', note: 'Cold internal wall surfaces plus low air change. Modelled, not observed.', status: 'risk', pct: 84 },
+        { label: 'Asbestos likelihood', value: 'Moderate', note: 'Conversion works recorded 1978. Textured coatings of that era commonly contain chrysotile.', status: 'warn', pct: 55 },
+        { label: 'EPC rating', value: 'D (61)', note: 'Median for this street is D.', status: 'ok', pct: 61, mark: 74, markLabel: 'POTENTIAL C 74' },
+        { label: 'Summer overheating', value: 'Moderate', note: 'South-west facing, single aspect, uninsulated roof above.', status: 'warn', pct: 58 },
+        { label: 'Rear addition junction', value: 'Cold bridge', note: 'The most common cold-bridge location in this house type.', status: 'warn', pct: 62 }
+      ],
+      actions: [
+        { cost: 'FREE', text: 'Leave a 50 mm gap between furniture and external walls, particularly on the north-east side.' },
+        { cost: 'FREE', text: 'Run the bathroom extractor for 20 minutes after every shower, with the door closed.' },
+        { cost: '£15', text: 'Put a hygrometer in the bedroom. Sustained readings above 65% RH are the threshold where mould becomes likely.' },
+        { cost: 'SURVEY', text: 'Before any wall insulation, get a condensation risk analysis. Internal insulation on solid brick moves the dew point into the wall.' }
+      ],
+      products: [
+        { name: 'Room hygrometer', note: 'Calibrated ±2% RH against a reference chamber. Logs 30 days.', price: '£15', tag: 'START HERE' },
+        { name: 'Continuous extract fan', note: 'Humidity-tracking, 12 W. Verified 28 dB at 1 m so it actually stays on.', price: '£180', tag: 'BATHROOM' }
+      ]
+    },
+    {
+      key: 'sleep', name: 'Sleep', score: 71, color: '#C77DD3', bandLabel: 'STRONG',
+      base: '#100C1E', bloom: 'radial-gradient(90% 70% at 74% 30%,rgba(199,125,211,0.18) 0%,rgba(16,12,30,0) 62%),radial-gradient(70% 60% at 16% 80%,rgba(199,125,211,0.09) 0%,rgba(16,12,30,0) 60%)',
+      summary: 'Quieter than most of inner London, and brighter at night than almost anywhere outside it.',
+      sources: ['DEFRA NOISE MAPPING', 'CPRE LIGHT POLLUTION', 'EPC REGISTER'],
+      meansLead: 'Fifty-two decibels through the night fragments sleep architecture without waking anyone up. That is why people in this house type report sleeping badly rather than being woken.',
+      actionTitle: 'One room, three fixes.',
+      meansRest: 'The heat and the light compound each other. A warm west-facing room under 3000 K street lighting delays melatonin onset and then holds core temperature high, and those two effects together are what people describe as taking a long time to drop off.',
+      science: 'Night-time road traffic noise above 40 dB Lnight is associated with measurable sleep disturbance; the strong recommendation is to reduce levels below that threshold.',
+      scienceRef: 'WHO ENVIRONMENTAL NOISE GUIDELINES FOR THE EUROPEAN REGION, 2018',
+      metrics: [
+        { label: 'Night noise, 23:00–07:00', value: '52 dB LAeq', note: 'Road traffic is the dominant source.', status: 'warn', pct: 74, mark: 57, markLabel: 'WHO 40 dB' },
+        { label: 'Light pollution', value: 'Bortle 8', note: 'Two LED street columns within 15 m at 3000 K.', status: 'warn', pct: 80 },
+        { label: 'Bedroom overheating risk', value: 'Moderate', note: 'Top floor, west facing, uninsulated roof. Peaks two hours after sunset.', status: 'warn', pct: 56 },
+        { label: 'Aircraft noise', value: 'Outside contour', note: 'Below the 54 dB Heathrow and City daytime contours.', status: 'ok', pct: 12 },
+        { label: 'Railway and industrial noise', value: 'None', note: 'Nearest line is 700 m, below significance threshold.', status: 'ok', pct: 8 },
+        { label: 'Quiet green space', value: '180 m', note: 'Measured night noise inside the Heath boundary is 38 dB.', status: 'ok', pct: 15 }
+      ],
+      actions: [
+        { cost: 'FREE', text: 'Move the bed off the window wall. A metre of separation reduces both peak noise and radiant heat.' },
+        { cost: '£180', text: 'Acoustic-lined blackout curtains, hung wide and long, beyond the reveal, past the sill.' },
+        { cost: '£60', text: 'Secondary glazing film on the front bedroom sash. Sash windows leak sound at the meeting rail first.' }
+      ],
+      products: [
+        { name: 'Acoustic blackout curtain', note: 'Measured 6 dB insertion loss at 500 Hz. No PVC or flame-retardant off-gassing.', price: '£180', tag: 'FRONT BEDROOM' },
+        { name: 'Magnetic secondary pane', note: '4 mm acrylic, removable. Tested on a 1890s sash without fixings.', price: '£60', tag: 'RENTER SAFE' }
+      ]
+    },
+  ];
+
+  FIVE = [
+    { n: '1', text: 'Ventilate from the rear of the house, toward the Heath, and keep front windows shut through both rush hours.', meta: 'AIR · TODAY · HABIT', impact: '+3', cost: 'FREE' },
+    { n: '2', text: 'Run the bathroom extractor for 20 minutes after every shower, with the door closed.', meta: 'STRUCTURE · TODAY · HABIT', impact: '+2', cost: 'FREE' },
+    { n: '3', text: 'Flush the kitchen tap for 30 seconds each morning, and book the free lead test from Thames Water.', meta: 'WATER · THIS WEEK · ONE CALL', impact: '+2', cost: 'FREE' },
+    { n: '4', text: 'Fit an NSF/ANSI 53 lead-certified filter at the kitchen tap.', meta: 'WATER · THIS MONTH · 30 MIN FIT', impact: '+4', cost: '£95' },
+    { n: '5', text: 'Hang acoustic-lined blackout curtains in the front bedroom, wide and long.', meta: 'SLEEP · THIS MONTH · ONE HOUR', impact: '+3', cost: '£180' }
+  ];
+
+  TESTS = [
+    { name: 'Air', note: 'PM2.5, VOCs, formaldehyde, NO₂, mould spores', count: '38 markers' },
+    { name: 'Water', note: 'Lead, copper, PFAS, nitrate, hardness, microplastics', count: '41 markers' },
+    { name: 'Surfaces', note: 'Heavy metals, phthalates, flame retardants, mould', count: '26 markers' },
+    { name: 'Conditions', note: 'Continuous humidity, temperature and noise logging', count: '14 days' }
+  ];
+
+  PRODUCTS = [
+    { col: '#7BA3D6', name: 'Undersink lead filter', note: 'NSF/ANSI 53 certified. In lab now, on water as hard as yours.', status: 'IN TESTING', impact: '+4 PTS' },
+    { col: '#C77DD3', name: 'Acoustic blackout curtain', note: 'Two candidates passed. Checking flame-retardant off-gassing.', status: 'IN TESTING', impact: '+3 PTS' },
+    { col: '#C15230', name: 'HEPA 13 room unit', note: 'Chamber-verified. First batch reserved for the waitlist.', status: 'READY', impact: '+3 PTS' },
+    { col: '#D68B3A', name: 'Continuous extract fan', note: 'Needs to be quiet enough that you leave it on. Most are not.', status: 'SHORTLISTED', impact: '+2 PTS' },
+    { col: '#3B9E4A', name: 'Doormat barrier system', note: 'Three-stage. Cuts tracked-in road dust and soil metals.', status: 'READY', impact: '+1 PT' }
+  ];
+
+  SCIENTISTS = {
+    water: { name: 'Dr Anya Raman', first: 'Anya', initials: 'AR', role: 'WATER CHEMISTRY LEAD', tag: 'DR ANYA RAMAN · WATER CHEMISTRY' },
+    air: { name: 'Dr Marcus Bell', first: 'Marcus', initials: 'MB', role: 'ATMOSPHERIC CHEMIST', tag: 'DR MARCUS BELL · AIR QUALITY' },
+    structure: { name: 'Ffion Hughes', first: 'Ffion', initials: 'FH', role: 'BUILDING PHYSICIST', tag: 'FFION HUGHES · BUILDING PHYSICS' },
+    sleep: { name: 'Dr Leo Marchetti', first: 'Leo', initials: 'LM', role: 'SLEEP ENVIRONMENT RESEARCH', tag: 'DR LEO MARCHETTI · SLEEP ENVIRONMENT' },
+    environment: { name: 'Dr Sofia Ndiaye', first: 'Sofia', initials: 'SN', role: 'ENVIRONMENTAL EPIDEMIOLOGIST', tag: 'DR SOFIA NDIAYE · EPIDEMIOLOGY' }
+  };
+
+  SAYS = {
+    'Hardness': 'Hard water gets blamed for a lot it does not do. It will not hurt you. It will kill your kettle, dull your washing and make every water softener salesman in London sound persuasive. Descale things, ignore the health claims.',
+    'Lead pipework likelihood': 'This is the one finding in your water I would actually act on. A house of this age with no recorded pipe replacement usually still has its original lead service pipe. The scale inside protects you, until someone digs up the road. Thames Water will test it for free and I would take them up on it.',
+    'Nitrate': 'Comfortably under the limit and stable across two years of returns. Nothing to do here.',
+    'Trihalomethanes': 'These are what you get for chlorinating water, and the trade is worth it. Yours sit at less than half the limit. If you dislike the taste, a jug in the fridge overnight sorts it.',
+    'PFAS': 'I want to be straight about this one. Your zone is not on the published monitoring list, so I cannot tell you your PFAS level. That is missing data, not a clean bill of health, and it is exactly the sort of gap a lab test closes.',
+    'Compliance rate': 'Effectively perfect at the works. The uncertainty in your water is all in the last few metres, not the treatment.',
+
+    'PM2.5, annual mean': 'Legally fine, nearly double what the WHO would like. Particulates this fine go past your airways and into your blood, and there is no threshold below which they stop mattering. It is the single number I would most want to lower in this house.',
+    'NO₂, annual mean': 'This is a traffic signature, and it swings hard by the hour. The annual mean hides the fact that your front rooms spend two hours a morning well above it.',
+    'Road proximity': 'Twenty-five metres is the awkward distance. Close enough to get the peaks, far enough that people assume they are fine. Concentrations drop off steeply with distance, which is why the back of your house is a different world from the front.',
+    'Air Quality Management Area': 'A declared AQMA is a council admitting the area breaches limits. It is context, not a verdict on your address.',
+    'Radon': 'Lowest band there is. Do nothing, spend nothing, and be glad you are not in Cornwall.',
+    'Mechanical ventilation': 'No vents, no extract, sealed sash windows. Your only ventilation strategy is you, deciding when to open a window, which means timing is everything.',
+
+    'Construction': 'Solid brick with no cavity is honest, robust construction that loses heat and stays cold on the inside face. It is not a fault. It is a property you have to design around.',
+    'Condensation and damp risk': 'This is the finding that matters most in your building. Cold walls plus sealed windows plus two people breathing is a moisture equation, and moisture always lands on the coldest surface it can find. Almost every damp problem I survey started here.',
+    'Asbestos likelihood': 'A 1978 conversion means textured coatings and floor tiles of the wrong era. Left alone, it is not a risk. It becomes one when someone starts sanding. Test before any works, not after.',
+    'EPC rating': 'A D is unremarkable for the street. What the certificate does not say is that the cheap route to a C, insulating the walls, is the route most likely to cause you a damp problem.',
+    'Summer overheating': 'West-facing under an uninsulated roof means your peak indoor temperature arrives two hours after the sun has gone. That is a sleep problem more than a comfort one.',
+    'Rear addition junction': 'The joint between the original house and the rear addition is where the wall gets thin and cold. If mould appears anywhere first, my money is on that corner.',
+
+    'Night noise, 23:00–07:00': 'Fifty-two decibels will not wake you. It will fragment you. Your body responds to traffic noise while you sleep through it, and the morning result is a night that did not restore you.',
+    'Light pollution': 'Two LED columns within fifteen metres at 3000 K is a lot of blue-weighted light landing on a bedroom window. Curtains solve it entirely. Coverage matters more than fabric.',
+    'Bedroom overheating risk': 'Heat and light compound. A warm room delays sleep onset, and light delays melatonin, and together they are what people describe as lying awake for an hour.',
+    'Aircraft noise': 'Outside every contour that matters. One thing this address does not have to think about.',
+    'Railway and industrial noise': 'Nothing here. Your noise is entirely road, which is useful, it means one wall to treat.',
+    'Quiet green space': 'A 38 dB refuge 180 metres from a 52 dB bedroom is a genuine asset. Use it early and use it often.',
+
+    'Flood risk, rivers and sea': 'Zone 1, elevated, below a tenth of a percent a year. This is as clean as flood risk gets in London.',
+    'Surface water flood risk': 'The Fleet runs culverted below you, but downhill. Water moves away from this address, not toward it.',
+    'Historic landfill within 250 m': 'Nothing on the register. In inner London, that is worth noticing, a lot of addresses cannot say the same.',
+    'Industrial emissions within 1 km': 'No registered sites. Your pollution is traffic, full stop, which at least makes it something you can time around.',
+    'Storm overflow, nearest catchment': 'Forty-one spills is not unusual and that is the depressing part. It only matters to you if someone in the house swims in the ponds, in which case check the live map first.',
+    'Accessible green space within 300 m': 'Top five percent nationally. The association between green space this close and better respiratory and mental health outcomes is one of the most consistent findings we have. It is doing real work in your score.'
+  };
+
+  WINDOWS = [
+    { id: 'hood-1', x: '2%', y: '9%', size: '104px', h: '78px', dur: '5.5s' },
+    { id: 'hood-2', x: '12%', y: '26%', size: '86px', h: '104px', dur: '7s' },
+    { id: 'hood-3', x: '20%', y: '4%', size: '76px', h: '92px', dur: '6.2s' },
+    { id: 'hood-4', x: '80%', y: '8%', size: '96px', h: '72px', dur: '8s' },
+    { id: 'hood-5', x: '88%', y: '30%', size: '84px', h: '100px', dur: '6.6s' },
+    { id: 'hood-6', x: '3%', y: '58%', size: '78px', h: '96px', dur: '7.4s' },
+    { id: 'hood-7', x: '13%', y: '82%', size: '92px', h: '70px', dur: '5.8s' },
+    { id: 'hood-8', x: '84%', y: '64%', size: '88px', h: '86px', dur: '8.4s' }
+  ];
+
+  TERRACE = [{ a: 0.75, b: 0.3, c: 0.55 }, { a: 0.35, b: 0.8, c: 0.2 }, { a: 0.55, b: 0.45, c: 0.4 }, { a: 0.28, b: 0.62, c: 0.5 }];
+
+  get BEATS() {
+    if (this._beats) return this._beats;
+    const b = [{ kind: 'map' }, { kind: 'score' }];
+    this.CATS.forEach((c, i) => { b.push({ kind: 'cat', ci: i }); });
+    b.push({ kind: 'five' }, { kind: 'tests' }, { kind: 'products' }, { kind: 'hood' });
+    this._beats = b;
+    return b;
+  }
+
+  componentDidMount() {
+    this.onKey = e => {
+      if (this.state.stage !== 'report') return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); this.go(this.state.b + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); this.go(this.state.b - 1); }
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.verbTimer = setInterval(() => {
+      this.setState({ verbShow: 0 });
+      setTimeout(() => this.setState(s => ({ verbIndex: (s.verbIndex + 1) % this.VERBS.length, verbShow: 1 })), 300);
+    }, 2100);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey);
+    (this.timers || []).forEach(clearTimeout);
+    clearInterval(this.rvTimer); clearInterval(this.t_heroScore); clearInterval(this.t_catScore); clearInterval(this.verbTimer);
+  }
+
+  beginReport = () => {
+    const pc = this.state.postcode;
+    if (pc && pc.trim()) this.geocodePostcode(pc);
+    this.setState({ stage: 'questions', qi: 0 });
+  };
+
+  at(ms, fn) { (this.timers = this.timers || []).push(setTimeout(fn, ms)); }
+
+  startThreshold() {
+    this.setState({ stage: 'threshold', beat: 0, montage: -1, montageLine: 0, dataCount: 0, doorOpen: false, stageOn: true, b: 0, rv: 0, heroScore: 0 });
+    this.at(2400, () => this.setState({ beat: 1, montageLine: 0 }));   // montage video (~6.5s)
+    this.at(4700, () => this.setState({ montageLine: 1 }));            // "Finally, it's time..."
+    this.at(9000, () => { this.setState({ beat: 2 }); this.countTo('dataCount', 1400, 2100); }); // finalising
+    this.at(12200, () => this.setState({ beat: 3 }));                  // your report is ready
+    this.at(14600, () => this.setState({ stageOn: false }));
+    this.at(15100, () => {
+      this.setState({ doorOpen: true, stage: 'report' });
+      this.go(0, true);
+      window.dispatchEvent(new Event('dweller:map-zoom'));
+    });
+  }
+
+  skipIntro = () => {
+    (this.timers || []).forEach(clearTimeout); this.timers = [];
+    this.setState({ stageOn: false, montage: -1, doorOpen: true, stage: 'report' });
+    this.go(0, true);
+    window.dispatchEvent(new Event('dweller:map-zoom'));
+  };
+
+  countTo(field, target, dur) {
+    clearInterval(this['t_' + field]);
+    const t0 = performance.now();
+    this['t_' + field] = setInterval(() => {
+      const p = Math.min(1, (performance.now() - t0) / dur);
+      this.setState({ [field]: Math.round(target * (1 - Math.pow(1 - p, 3))) });
+      if (p >= 1) clearInterval(this['t_' + field]);
+    }, 32);
+  }
+
+  go = (i, force) => {
+    const B = this.BEATS;
+    if (i < 0 || i >= B.length) return;
+    if (!force && i === this.state.b) return;
+    const beat = B[i], prevBeat = B[this.state.b];
+    const patch = { b: i, rv: 0, bars: false, open: 0 };
+    const newCat = beat.kind === 'cat' && (force || prevBeat.kind !== 'cat' || prevBeat.ci !== beat.ci);
+    if (newCat) { patch.catScore = 0; patch.catRing = 0; }
+    this.setState(patch);
+
+    clearInterval(this.rvTimer);
+    this.rvTimer = setInterval(() => {
+      this.setState(s => (s.rv >= 9 ? (clearInterval(this.rvTimer), null) : { rv: s.rv + 1 }));
+    }, 95);
+
+    if (beat.kind === 'score' && (force || prevBeat.kind !== 'score')) this.countTo('heroScore', 62, 1900);
+    if (newCat) {
+      const c = this.CATS[beat.ci];
+      this.at(220, () => { this.countTo('catScore', c.score, 1500); this.setState({ catRing: c.score }); });
+    }
+    if (beat.kind === 'cat') this.at(260, () => this.setState({ bars: true }));
+    if (beat.kind === 'map') this.at(5200, () => { if (this.state.b === i) this.go(i + 1); });
+  };
+
+  next = e => { if (e && e.stopPropagation) e.stopPropagation(); this.go(this.state.b + 1); };
+  prev = e => { if (e && e.stopPropagation) e.stopPropagation(); this.go(this.state.b - 1); };
+
+  pickQ(q, o) {
+    this.setState(st => {
+      const a = Object.assign({}, st.answers);
+      if (q.multi) { const l = (a[q.key] || []).slice(), ix = l.indexOf(o); if (ix > -1) l.splice(ix, 1); else l.push(o); a[q.key] = l; }
+      else a[q.key] = o;
+      return { answers: a };
+    });
+    if (!q.multi) this.at(240, () => this.qNext());
+  }
+
+  toggleAnswer(key, val) {
+    this.setState(st => {
+      const a = Object.assign({}, st.answers);
+      const l = (a[key] || []).slice();
+      const ix = l.indexOf(val);
+      if (ix > -1) l.splice(ix, 1); else l.push(val);
+      a[key] = l;
+      return { answers: a };
+    });
+  }
+
+  qNext = e => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const step = this.STEPS[this.state.qi];
+    if (step && step.tc && !this.state.tcAgree) return; // gate on terms
+    if (this.state.qi >= this.STEPS.length - 1) this.startThreshold();
+    else this.setState(s => ({ qi: s.qi + 1 }));
+  };
+
+  // Look up the entered UK postcode so the map flies to the real location.
+  geocodePostcode(pc) {
+    const raw = (pc || '').trim();
+    if (!raw) return;
+    const norm = raw.toUpperCase().replace(/\s+/g, '');
+    const pretty = raw.toUpperCase().replace(/\s+/g, ' ');
+    fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(norm))
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        const d = j && j.result;
+        if (d && typeof d.latitude === 'number' && typeof d.longitude === 'number') {
+          const district = d.admin_district || d.admin_ward || d.region || '';
+          this.setState({ mapLat: d.latitude, mapLng: d.longitude, mapPlace: district, address: pretty });
+          this.reverseGeocode(d.latitude, d.longitude, pretty, district);
+        } else {
+          this.geocodeOutcode(norm, pretty);
+        }
+      })
+      .catch(() => this.geocodeOutcode(norm, pretty));
+  }
+  geocodeOutcode(norm, pretty) {
+    const outcode = norm.replace(/\d[A-Z]{2}$/, '');
+    if (!outcode || outcode === norm) { this.setState({ address: pretty }); return; }
+    fetch('https://api.postcodes.io/outcodes/' + encodeURIComponent(outcode))
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        const d = j && j.result;
+        if (d && typeof d.latitude === 'number') {
+          const district = (d.admin_district && d.admin_district[0]) || (d.region && d.region[0]) || '';
+          this.setState({ mapLat: d.latitude, mapLng: d.longitude, mapPlace: district, address: pretty });
+          this.reverseGeocode(d.latitude, d.longitude, pretty, district);
+        } else {
+          this.setState({ address: pretty });
+        }
+      })
+      .catch(() => this.setState({ address: pretty }));
+  }
+  // Reverse-geocode the postcode's location to a real street, and use it throughout.
+  reverseGeocode(lat, lng, postcode, district) {
+    fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&lat=' + lat + '&lon=' + lng)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        const a = (j && j.address) || {};
+        const road = a.road || a.pedestrian || a.residential || a.footway || a.neighbourhood || '';
+        const town = a.suburb || a.town || a.city || a.village || a.county || district || '';
+        const address = road ? (road + ', ' + postcode) : (town ? (town + ', ' + postcode) : postcode);
+        this.setState({ road: road, town: town, address: address });
+      })
+      .catch(() => {});
+  }
+  qBack = () => {
+    if (this.state.qi === 0) this.setState({ stage: 'home' });
+    else this.setState(s => ({ qi: s.qi - 1 }));
+  };
+
+  renderVals() {
+    const s = this.state, C = 2 * Math.PI, RH = 108 * C, RG = 96 * C, RC = 106 * C;
+    const addr = s.address || this.ADDRESSES[0];
+    const B = this.BEATS, cur = B[Math.min(s.b, B.length - 1)] || B[0];
+    const dark = cur.kind === 'cat' || cur.kind === 'headline' || cur.kind === 'tests' || cur.kind === 'hood' || cur.kind === 'map';
+    const rv = s.rv, R = {};
+    for (let i = 1; i <= 9; i++) { R['o' + i] = rv >= i ? 1 : 0; R['y' + i] = rv >= i ? '0px' : '18px'; }
+
+    const STEPS = this.STEPS, totalSteps = STEPS.length;
+    const step = STEPS[Math.min(s.qi, totalSteps - 1)] || STEPS[0];
+    const stepText = step.kind === 'text';
+    const stepQuestion = step.kind === 'q';
+    const stepGreeting = step.kind === 'greeting';
+    const stepCharacters = step.kind === 'characters';
+    const stepConcern = step.kind === 'concern';
+    const nm = ((s.first_name || '').trim().split(' ')[0]) || 'neighbour';
+    const fillName = str => (str || '').split('{name}').join(nm);
+    const q = stepQuestion ? (this.QUESTIONS.find(x => x.key === step.key) || this.QUESTIONS[0]) : this.QUESTIONS[0];
+    const qv = s.answers[q.key];
+    const qOptions = q.options.map(pair => {
+      const label = pair[0], on = q.multi ? (qv || []).indexOf(label) > -1 : qv === label;
+      return {
+        label, glyph: pair[1],
+        css: on ? 'background:#1F1A17;color:#F6F2EC;border:1px solid #1F1A17;box-shadow:0 6px 16px rgba(31,26,23,0.13)'
+                : 'background:#FFFFFF;color:#1F1A17;border:1px solid #E7DDCF',
+        pick: () => this.pickQ(q, label)
+      };
+    });
+
+    const comp = s.answers.composition || [];
+    const characterTiles = this.CHARACTERS.map(c => {
+      const on = comp.indexOf(c.key) > -1;
+      return {
+        label: c.label, scale: c.scale, isPet: c.isPet, human: !c.isPet, on,
+        css: on ? 'background:#1F1A17;border:1px solid #1F1A17;box-shadow:0 8px 20px rgba(31,26,23,0.16)'
+                : 'background:#FFFFFF;border:1px solid #E7DDCF',
+        figColor: on ? '#F6F2EC' : '#C15230',
+        labelColor: on ? '#F6F2EC' : '#1F1A17',
+        toggle: e => { if (e && e.stopPropagation) e.stopPropagation(); this.toggleAnswer('composition', c.key); }
+      };
+    });
+    const concernSel = s.answers.concern || [];
+    const concernCards = this.CONCERNS.map(c => {
+      const on = concernSel.indexOf(c.key) > -1;
+      return {
+        label: c.label, triggers: c.triggers, on,
+        css: on ? 'background:#1F1A17;border:1px solid #1F1A17'
+                : 'background:#FFFFFF;border:1px solid #E7DDCF',
+        titleColor: on ? '#F6F2EC' : '#1F1A17',
+        subColor: on ? 'rgba(246,242,236,0.66)' : '#8A8078',
+        dotColor: on ? '#F2A93C' : 'rgba(31,26,23,0.18)',
+        toggle: e => { if (e && e.stopPropagation) e.stopPropagation(); this.toggleAnswer('concern', c.key); }
+      };
+    });
+
+    let bgBase = '#F6F2EC', bgBloom = 'radial-gradient(110% 80% at 76% 8%,rgba(240,193,115,0.42) 0%,rgba(250,244,234,0) 62%)', ink = '#1F1A17';
+    if (cur.kind === 'map') { bgBase = '#1F1A17'; bgBloom = 'none'; ink = '#F6F2EC'; }
+    if (cur.kind === 'headline') { bgBase = '#1A100A'; bgBloom = 'radial-gradient(80% 70% at 82% 18%,rgba(240,193,115,0.16) 0%,rgba(26,16,10,0) 62%)'; ink = '#F6F2EC'; }
+    if (cur.kind === 'five') { bgBase = '#F0C173'; bgBloom = 'radial-gradient(90% 80% at 18% 12%,rgba(255,240,214,0.6) 0%,rgba(240,193,115,0) 62%)'; ink = '#1F1A17'; }
+    if (cur.kind === 'tests') { bgBase = '#1F1A17'; bgBloom = 'radial-gradient(90% 80% at 50% 0%,rgba(193,82,48,0.16) 0%,rgba(31,26,23,0) 60%)'; ink = '#F6F2EC'; }
+    if (cur.kind === 'products') { bgBase = '#F6F2EC'; bgBloom = 'radial-gradient(90% 70% at 84% 10%,rgba(240,193,115,0.34) 0%,rgba(246,238,225,0) 62%)'; ink = '#1F1A17'; }
+    if (cur.kind === 'hood') { bgBase = '#131010'; bgBloom = 'radial-gradient(60% 50% at 50% 46%,rgba(255,240,214,0.035) 0%,rgba(19,16,16,0) 70%)'; ink = '#F6F2EC'; }
+    if (cur.kind === 'cat') { const c = this.CATS[cur.ci]; bgBase = c.base; bgBloom = c.bloom; ink = '#F6F2EC'; }
+
+    let catObj = {};
+    if (cur.kind === 'cat') {
+      const c = this.CATS[cur.ci];
+      const open = s.open == null ? 0 : s.open;
+      catObj = {
+        name: c.name, upper: c.name.toUpperCase(), color: c.color, summary: c.summary,
+        bandLabel: c.bandLabel, index: '0' + (cur.ci + 1) + ' / 05', sources: c.sources,
+        sci: this.SCIENTISTS[c.key],
+        dash: ((s.catRing / 100) * RC).toFixed(1) + ' ' + RC.toFixed(1),
+        metrics: c.metrics.map((m, i) => ({
+          label: m.label, value: m.value, note: m.note,
+          says: this.SAYS[m.label] || '',
+          tone: { ok: '#7FC9A4', warn: '#F0C173', risk: '#E06148', unknown: 'rgba(250,246,240,0.45)' }[m.status],
+          w: s.bars && open === i ? m.pct + '%' : '0%',
+          hasMark: !!m.mark, markLeft: (m.mark || 0) + '%', markLabel: m.markLabel || '',
+          maxH: open === i ? '340px' : '0px', openO: open === i ? 1 : 0,
+          toggle: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(st => ({ open: st.open === i ? -1 : i })); },
+          o: rv >= i + 1 ? 1 : 0, y: rv >= i + 1 ? '0px' : '14px'
+        })),
+        actions: c.actions.map((a, i) => ({
+          cost: a.cost,
+          short: a.text.split('.')[0].replace(/^([A-Z])/, m => m),
+          o: rv >= i + 4 ? 1 : 0
+        }))
+      };
+    }
+
+    const groups = [];
+    const chapterOf = k => B[k].kind === 'cat' ? 'c' + B[k].ci : B[k].kind;
+    B.forEach((bt, k) => {
+      const id = chapterOf(k);
+      if (!groups.length || groups[groups.length - 1].id !== id) groups.push({ id, from: k, n: 0 });
+      groups[groups.length - 1].n++;
+    });
+    const segments = groups.map(g => {
+      const done = Math.max(0, Math.min(g.n, s.b - g.from + 1));
+      return {
+        flex: g.n, w: (done / g.n * 100) + '%',
+        trackCol: dark ? 'rgba(250,246,240,0.18)' : 'rgba(31,26,23,0.15)',
+        fillCol: dark ? '#F6F2EC' : '#1F1A17'
+      };
+    });
+    const chapterDots = groups.map(g => ({
+      go: e => { if (e && e.stopPropagation) e.stopPropagation(); this.go(g.from); },
+      col: s.b >= g.from ? (dark ? '#F6F2EC' : '#1F1A17') : (dark ? 'rgba(250,246,240,0.28)' : 'rgba(31,26,23,0.22)'),
+      scale: (s.b >= g.from && s.b < g.from + g.n) ? 1.45 : 1
+    }));
+
+    const labels = { map: 'YOUR ADDRESS', score: 'HOME HEALTH SCORE', headline: 'THE OVERALL PICTURE', five: 'ACTION AREAS', tests: 'DWELLER TESTS', products: 'DWELLER PRODUCTS', hood: 'NEIGHBOURHOOD' };
+    const chapterLabel = cur.kind === 'cat' ? this.CATS[cur.ci].name.toUpperCase() : labels[cur.kind];
+    const bandCols = ['#C0392B', '#D68B3A', '#F2A93C', '#A6DB6A', '#3B9E4A'];
+
+    const first = (s.first_name || 'neighbour').split(' ')[0];
+
+    return Object.assign(R, {
+      isHome: s.stage === 'home',
+      isQuestions: s.stage === 'questions',
+      showThreshold: s.stage === 'threshold',
+      showStory: s.stage === 'report' || s.stage === 'threshold',
+
+      openFlow: this.beginReport, beginReport: this.beginReport,
+      postcode: s.postcode, postcodeUpper: (s.postcode || 'NW3 2QU').toUpperCase(),
+      onPostcode: e => this.setState({ postcode: e.target.value }),
+      onPostcodeKey: e => { if (e.key === 'Enter') this.beginReport(); },
+      email: s.email,
+      onEmail: e => this.setState({ email: e.target.value }),
+      noop: e => { if (e && e.preventDefault) e.preventDefault(); },
+
+      verbWord: this.VERBS[s.verbIndex], verbOpacity: s.verbShow, verbY: s.verbShow ? '0em' : '0.42em',
+
+      stepQuestion, stepText, stepGreeting, stepCharacters, stepConcern,
+      textKicker: step.kicker || '', textLabel: fillName(step.label), textWhy: fillName(step.why),
+      textPlaceholder: step.placeholder || '', textType: step.type || 'text',
+      textValue: stepText ? (s[step.field] || '') : '',
+      onText: e => { if (stepText) this.setState({ [step.field]: e.target.value }); },
+      onTextKey: e => { if (e.key === 'Enter' && !(step.tc && !s.tcAgree)) this.qNext(); },
+      greetingKicker: step.kicker || '', greetingLabel: fillName(step.label), greetingWhy: fillName(step.why),
+      characterTiles, concernCards,
+      stepTc: !!step.tc, tcAgree: s.tcAgree,
+      toggleTc: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(st => ({ tcAgree: !st.tcAgree })); },
+      tcBoxCss: s.tcAgree ? 'background:#C15230;border-color:#C15230' : 'background:#fff;border-color:#E7DDCF',
+      tcTick: s.tcAgree ? 1 : 0,
+      qNextOpacity: (step.tc && !s.tcAgree) ? 0.45 : 1,
+      q: { label: q.label, hint: q.hint, why: q.why, options: qOptions },
+      qi: s.qi, qCounter: (s.qi + 1) + ' / ' + totalSteps,
+      qNextLabel: (stepText && step.field === 'email') ? 'BUILD MY REPORT'
+                : (stepQuestion && !q.multi) ? 'NEXT'
+                : 'CONTINUE',
+      qNext: this.qNext, qBack: this.qBack,
+      qDots: Array.from({ length: totalSteps }, (_, i) => ({ col: i <= s.qi ? '#C15230' : 'rgba(31,26,23,0.16)' })),
+
+      beatLogo: s.beat === 0, beatMontage: s.beat === 1, beatFinal: s.beat === 2, beatWelcome: s.beat === 3,
+      montageLine0: s.montageLine === 0, montageLine1: s.montageLine === 1, dataCountDisplay: s.dataCount,
+      stageOpacity: s.stageOn ? 1 : 0,
+      doorL: s.doorOpen ? '-101%' : '0%', doorR: s.doorOpen ? '101%' : '0%',
+      welcomeLine: 'Welcome in, ' + first + '.',
+      addressUpper: addr.toUpperCase(),
+      skipIntro: this.skipIntro, next: this.next, prev: this.prev,
+      restart: e => { if (e && e.stopPropagation) e.stopPropagation(); (this.timers || []).forEach(clearTimeout); this.timers = []; this.setState({ stage: 'home', flow: null, b: 0, qi: 0 }); },
+
+      bgBase, bgBloom, ink, grainOn: dark ? 0.11 : 0.05,
+      segments, chapterDots, chapterLabel,
+      isMap: cur.kind === 'map', isScore: cur.kind === 'score', isHeadline: cur.kind === 'headline',
+      isCat: cur.kind === 'cat',
+      isFive: cur.kind === 'five', isTests: cur.kind === 'tests', isProducts: cur.kind === 'products', isHood: cur.kind === 'hood',
+      mapOpacity: cur.kind === 'map' ? 1 : 0,
+      bands: bandCols.map(c => ({ col: c })),
+      bandMark: (s.heroScore) + '%',
+      emailPlaceholder: 'name@email.com',
+      markers: this.MARKERS, markersDup: this.MARKERS,
+      waitlistLabel: s.joined ? "YOU ARE ON THE LIST" : 'REQUEST AN INVITE',
+      waitlistNote: s.joined ? 'WE WILL BE IN TOUCH · NO CHARGE TODAY' : 'PRE-LAUNCH · OVERSUBSCRIBED · NO CHARGE TODAY',
+      joinWaitlist: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ joined: true }); },
+      cur: catObj, catScore: s.catScore,
+      heroDash: ((s.heroScore / 100) * RH).toFixed(1) + ' ' + RH.toFixed(1),
+      heroDashGoal: ((s.heroScore > 60 ? 81 : 0) / 100 * RG).toFixed(1) + ' ' + RG.toFixed(1),
+      hintOn: s.b <= 1 ? 0.9 : 0,
+      catChips: (() => {
+        const map = { air: 'air', water: 'water', structure: 'structure', noise: 'sleep', chemicals: 'air' };
+        const concerned = (s.answers.concern || []).map(k => map[k]).filter(Boolean);
+        return this.CATS.map((c, i) => ({
+          name: c.name, upper: c.name.toUpperCase(), score: c.score, color: c.color,
+          band: c.bandLabel, soft: c.color + '1A', edge: c.color + '55',
+          w: s.heroScore > 0 ? c.score + '%' : '0%',
+          num: (i + 1 < 10 ? '0' : '') + (i + 1),
+          lead: concerned.indexOf(c.key) > -1,
+          o: rv >= i + 2 ? 1 : 0, y: rv >= i + 2 ? '0px' : '10px',
+          go: e => { if (e && e.stopPropagation) e.stopPropagation(); this.go(2 + i); }
+        })).sort((a, b) => (a.lead === b.lead ? 0 : a.lead ? -1 : 1));
+      })(),
+      windows: this.WINDOWS,
+
+      addressLine: addr,
+      addressShort: addr,
+      mapLat: s.mapLat, mapLng: s.mapLng,
+      mapSub: s.road || s.town || s.mapPlace || (s.postcode ? s.postcode.toUpperCase() : addr),
+      propertyLine: 'Mid-terrace Victorian conversion, built c.1893 · Solid brick · Owner-occupied · ' + (s.mapPlace || 'Camden'),
+      reportHeadline: 'Your home has more going for it than against it.',
+      reportSummary: 'The ground it sits on is excellent, clean, dry, green. The building just traps a little too much of what the road gives it, and most of the fixes are about airflow and timing, not big spends.',
+      scoreDisplay: s.heroScore, bandFull: 'GOOD · 55–69',
+      ticks: Array.from({ length: 44 }, (_, i) => {
+        const a = (i / 44) * 2 * Math.PI - Math.PI / 2;
+        const major = i % 4 === 0;
+        const rO = 116, rI = major ? 100 : 107;
+        const on = (i / 44) * 100 <= s.heroScore;
+        return {
+          x1: (120 + rO * Math.cos(a)).toFixed(1), y1: (120 + rO * Math.sin(a)).toFixed(1),
+          x2: (120 + rI * Math.cos(a)).toFixed(1), y2: (120 + rI * Math.sin(a)).toFixed(1),
+          col: on ? '#C15230' : 'rgba(31,26,23,0.14)', wdt: major ? 2.4 : 1.2
+        };
+      }),
+      fiveThings: this.FIVE.map((t, i) => Object.assign({}, t, { o: rv >= i + 3 ? 1 : 0, y: rv >= i + 3 ? '0px' : '18px' })),
+      testItems: this.TESTS,
+      productList: this.PRODUCTS.map((p, i) => Object.assign({}, p, { o: rv >= i + 3 ? 1 : 0, y: rv >= i + 3 ? '0px' : '18px' }))
+    });
+  }
+}
+</script>
+</body>
+</html>

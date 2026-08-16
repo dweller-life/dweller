@@ -1,0 +1,66 @@
+/* Dweller — design tokens
+ * Colour values are screenshot-sampled approximations; replace with exact brand values.
+ * Fonts: Sora (display/body), JetBrains Mono (labels).
+ */
+
+:root {
+  /* --- Core brand --- */
+  --dw-terracotta: #C15230;  /* primary action / CTA */
+  --dw-amber:      #D68B3A;  /* hero / atmosphere */
+  --dw-cream:      #F6F2EC;  /* page background (warm off-white) */
+  --dw-sand:       #E9D9B8;  /* muted section background */
+  --dw-ink:        #1F1A17;  /* headlines / dark sections */
+  --dw-warm-grey:  #5C564F;  /* body / secondary text */
+
+  /* --- Data-viz accents (results & charts only) --- */
+  --dw-air:        #F2A93C;
+  --dw-light:      #A6DB6A;
+  --dw-water:      #7BA3D6;
+  --dw-noise:      #C77DD3;
+  --dw-track:      #6E6E6E;
+
+  /* --- Status --- */
+  --dw-optimal:    #3B9E4A;
+  --dw-below:      #C0392B;
+
+  /* --- Semantic aliases --- */
+  --color-primary:      var(--dw-terracotta);
+  --color-bg:           var(--dw-cream);
+  --color-surface:      #FFFFFF;
+  --color-text:         var(--dw-ink);
+  --color-text-muted:   var(--dw-warm-grey);
+  --color-bg-inverse:   var(--dw-ink);
+
+  /* --- Typography --- */
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body:    "Sora", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --tracking-label: 0.1em;   /* uppercase mono eyebrows/tags */
+  --leading-display: 1.08;
+  --leading-body: 1.5;
+
+  /* --- Shape --- */
+  --radius-card: 22px;
+  --radius-pill: 999px;
+  --shadow-card: 0 8px 30px rgba(31, 26, 23, 0.08);
+}
+
+/* Optional Tailwind (v3) theme.extend equivalent:
+theme: {
+  extend: {
+    colors: {
+      terracotta: '#C15230', amber: '#D68B3A', cream: '#F6F2EC',
+      sand: '#E9D9B8', ink: '#1F1A17', 'warm-grey': '#5C564F',
+      air: '#F2A93C', light: '#A6DB6A', water: '#7BA3D6', noise: '#C77DD3',
+      track: '#6E6E6E', optimal: '#3B9E4A', below: '#C0392B',
+    },
+    fontFamily: {
+      display: ['Sora', 'sans-serif'],
+      sans: ['Sora', 'sans-serif'],
+      mono: ['JetBrains Mono', 'monospace'],
+    },
+    borderRadius: { card: '22px', pill: '9999px' },
+  },
+}
+*/
